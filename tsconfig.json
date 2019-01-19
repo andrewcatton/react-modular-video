@@ -6,7 +6,6 @@
     "sourceMap": true,
     "allowJs": false,
     "jsx": "react",
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,7 +14,12 @@
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "react-modular-video": ["src/index"]
+    }
   },
-  "include": ["src/**/*.*"]
+  "include": ["src/**/*.*", "example/**/*.*"]
 }

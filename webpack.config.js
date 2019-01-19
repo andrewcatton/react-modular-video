@@ -1,3 +1,4 @@
+const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 
@@ -18,7 +19,11 @@ const config = {
 
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: [".ts", ".tsx", ".js", ".json"]
+    extensions: [".ts", ".tsx", ".js", ".json"],
+    alias: {
+      "react-modular-video": path.resolve(__dirname, "src"),
+      src: path.resolve(__dirname, "src")
+    }
   },
 
   module: {
@@ -36,6 +41,11 @@ const config = {
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.(mp4)$/,
+        exclude: /node_modules/,
+        loader: "file-loader?name=videos/[name].[ext]"
       }
     ]
   },
