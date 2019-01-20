@@ -1,12 +1,14 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+  .BundleAnalyzerPlugin;
 
 const env = process.env.WEBPACK_BUILD || "development";
 
 const config = {
   mode: env,
-  entry: `${__dirname}/src/index.tsx`,
+  entry: `${__dirname}/src/index`,
 
   output: {
     filename: "react-modular-video.js",
@@ -14,12 +16,9 @@ const config = {
     libraryTarget: "umd",
     path: `${__dirname}/lib`
   },
-  // Enable sourcemaps for debugging webpack's output.
-  devtool: "source-map",
-
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: [".ts", ".tsx", ".js", ".json"],
+    extensions: [".mjs", ".ts", ".tsx", ".js", ".json"],
     alias: {
       "react-modular-video": path.resolve(__dirname, "src"),
       src: path.resolve(__dirname, "src")
@@ -45,9 +44,10 @@ const config = {
       }
     ]
   },
-  plugins: [new CleanWebpackPlugin(["lib"])]
+  plugins: [new CleanWebpackPlugin(["lib"]), new BundleAnalyzerPlugin()]
 };
 if (env === "development") {
+  config.devtool = "source-map";
   config.devServer = {
     disableHostCheck: true,
     contentBase: __dirname + "/lib",
