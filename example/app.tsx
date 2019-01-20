@@ -535,27 +535,26 @@ export default class App extends React.Component<AppProps, AppState> {
             >
               Toggle Custom Fill Component
             </Button>
-            {this.state.showCustomSliders ||
-              (this.state.showCustomFill && (
-                <Form inline>
-                  <FormGroup>
-                    <ControlLabel>Left Slider</ControlLabel>
-                    <FormControl
-                      disabled
-                      type="text"
-                      value={this.state.leftSlider}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <ControlLabel>Right Slider</ControlLabel>
-                    <FormControl
-                      disabled
-                      type="text"
-                      value={this.state.rightSlider}
-                    />
-                  </FormGroup>
-                </Form>
-              ))}
+            {(this.state.showCustomSliders || this.state.showCustomFill) && (
+              <Form inline>
+                <FormGroup>
+                  <ControlLabel>Left Slider</ControlLabel>
+                  <FormControl
+                    disabled
+                    type="text"
+                    value={this.state.leftSlider}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <ControlLabel>Right Slider</ControlLabel>
+                  <FormControl
+                    disabled
+                    type="text"
+                    value={this.state.rightSlider}
+                  />
+                </FormGroup>
+              </Form>
+            )}
           </Col>
         </Row>
       </Grid>
