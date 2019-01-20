@@ -12,6 +12,7 @@ export interface ProgressBarProps {
   scrub?: boolean;
   fills?: SliderFill[];
   handles?: SliderHandle[];
+  disableAnimate?: boolean;
 }
 
 export interface ProgressBarState {}
@@ -22,10 +23,10 @@ export class ProgressBar extends React.Component<
 > {
   constructor(props) {
     super(props);
-    this.state = {};
     if (this.props.scrub) {
       this.onDrag = throttle(this.onDrag, 100);
     }
+    this.state = {};
   }
 
   onDrag = (position: number) => {
@@ -73,10 +74,11 @@ export class ProgressBar extends React.Component<
     if (this.props.fills) {
       fills.push(...this.props.fills);
     }
+
     return (
       <Control flex="grow">
         <Slider
-          animate
+          animate={!this.props.disableAnimate}
           onDrag={this.onDrag}
           onDragEnd={this.onDragEnd}
           maxVal={this.props.duration}
@@ -84,6 +86,7 @@ export class ProgressBar extends React.Component<
           seeking={this.props.seeking}
           fills={fills}
           sliders={this.props.handles}
+          sliderFunc={this.getTimeFromPosition}
           toolTipDisplay={this.getFormattedTime}
           mouseToolTip
         />

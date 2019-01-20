@@ -33,6 +33,7 @@ export interface SliderProps {
   width?: string;
   toolTipDisplay?: (position: number) => string;
   mouseToolTip?: boolean;
+  sliderFunc?: (pos: number) => number;
 }
 
 export interface SliderState {
@@ -51,7 +52,6 @@ const RangeSlider = styled.div<{ expand: boolean; width?: string }>`
   position: relative;
   background: aliceblue;
   border: none;
-  border-radius: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
 
@@ -85,7 +85,6 @@ const RangeFill = styled.div.attrs<{
   })
 })`
   position: absolute;
-  border-radius: 5px;
 
   height: 100%;
   background-color: ${props => props.color};
@@ -259,7 +258,7 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
 
     document.addEventListener("mousemove", this.extraDrag as any);
     document.addEventListener("mouseup", this.extraEnd as any);
-    let grabs = { ...this.state.grabs };
+    let grabs = [...this.state.grabs];
     grabs[i] = true;
     this.setState({ grabs });
   };
@@ -281,13 +280,14 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
     e.stopPropagation();
     e.preventDefault();
     let grabPos = this.getGrabPosition(e);
-    let grabPoses = { ...this.state.grabPoses };
+    let grabPoses = [...this.state.grabPoses];
     grabPoses[i] = grabPos;
     this.setState({ grabPoses });
     if (this.props.sliders) {
       let slider = this.props.sliders[i];
-      if (slider.onDrag) {
-        slider.onDrag(grabPos);
+      if (slider.onDrag && this.props.sliderFunc) {
+        let val = this.props.sliderFunc(grabPos);
+        slider.onDrag(val);
       }
     }
   };
@@ -308,11 +308,11 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
     document.removeEventListener("mouseup", this.extraEnd as any);
     if (this.props.sliders) {
       let slider = this.props.sliders[i];
-      if (slider.onDragEnd) {
-        slider.onDragEnd(this.state.grabPoses[i]);
+      if (slider.onDragEnd && this.props.sliderFunc) {
+        slider.onDragEnd(this.props.sliderFunc(this.state.grabPoses[i]));
       }
     }
-    let grabs = { ...this.state.grabs };
+    let grabs = [...this.state.grabs];
     grabs[i] = false;
     this.setState({ grabs });
   };
@@ -390,7 +390,16 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
           this.getExtraHandlePosition(slider, i)
         )
       : [];
-    const expand = !this.props.animate || this.state.expand || this.state.grab;
+    let grabbed = this.state.grab;
+    if (!grabbed) {
+      this.state.grabs &&
+        this.state.grabs.forEach(val => {
+          if (val) {
+            grabbed = true;
+          }
+        });
+    }
+    const expand = !this.props.animate || this.state.expand || grabbed;
     return (
       <RangeSlider
         onMouseOver={this.handleMouseOver}

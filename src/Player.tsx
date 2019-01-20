@@ -254,14 +254,18 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     this.setState({ isFullscreen: !this.state.isFullscreen });
   };
 
+  getTimeFromPosition = (position: number) => {
+    return (position / 100) * this.state.duration;
+  };
+
   startControlsTimer = () => {
+    this.setState({ controlsVisible: true });
     if (
       this.props.hideControlsDelay !== undefined &&
       this.props.hideControlsDelay <= 0
     ) {
       return;
     }
-    this.setState({ controlsVisible: true });
     if (this.controlsHideTimer) {
       clearTimeout(this.controlsHideTimer);
     }

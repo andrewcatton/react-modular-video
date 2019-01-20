@@ -114,9 +114,13 @@ export class VolumeControl extends React.Component<
     };
 
     const menuOpen =
-      this.state.menuOpen || this.props.alwaysShowVolumeSlider === true;
+      this.state.menuOpen ||
+      this.props.alwaysShowVolumeSlider === true ||
+      this.props.hideMuteButton === true;
     const menuHidden =
-      this.state.menuHidden || !this.props.alwaysShowVolumeSlider;
+      this.state.menuHidden &&
+      !this.props.alwaysShowVolumeSlider &&
+      !this.props.hideMuteButton;
     return (
       <VolumeControlRow
         flex="no-shrink"

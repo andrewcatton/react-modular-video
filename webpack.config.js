@@ -39,10 +39,6 @@ const config = {
         loader: "file-loader?name=images/[name].[ext]"
       },
       {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      },
-      {
         test: /\.(mp4)$/,
         exclude: /node_modules/,
         loader: "file-loader?name=videos/[name].[ext]"
@@ -51,7 +47,6 @@ const config = {
   },
   plugins: [new CleanWebpackPlugin(["lib"])]
 };
-console.log("env :", env);
 if (env === "development") {
   config.devServer = {
     disableHostCheck: true,

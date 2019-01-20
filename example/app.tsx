@@ -17,14 +17,22 @@ import {
   ControlCol,
   Control
 } from "react-modular-video";
-import styled from "styled-components";
 import { MdInfo } from "react-icons/md";
+import {
+  Grid,
+  Row,
+  Col,
+  Button,
+  Well,
+  FormGroup,
+  ControlLabel,
+  FormControl,
+  HelpBlock,
+  Form
+} from "react-bootstrap";
+import { SliderHandle, SliderFill } from "src/components/slider/Slider";
 
 const video = require("./sample.mp4");
-
-const ToggleButton = styled.button<{ active: boolean }>`
-  background: ${props => (props.active ? "blue" : "gray")};
-`;
 
 export interface AppProps {}
 export interface AppState {
@@ -52,6 +60,10 @@ export interface AppState {
   showCustomOne: boolean;
   showCustomTwo: boolean;
   showCustomSliders: boolean;
+  showCustomFill: boolean;
+  disableAnimate: boolean;
+  leftSlider: number;
+  rightSlider: number;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -81,9 +93,14 @@ export default class App extends React.Component<AppProps, AppState> {
       disableKeyboardControls: false,
       showCustomOne: false,
       showCustomTwo: false,
-      showCustomSliders: false
+      showCustomSliders: false,
+      showCustomFill: false,
+      disableAnimate: false,
+      leftSlider: 50,
+      rightSlider: 100
     };
   }
+
   public render() {
     let rates: number[] | undefined;
     try {
@@ -94,18 +111,201 @@ export default class App extends React.Component<AppProps, AppState> {
     } catch (e) {
       console.log("e :", e);
     }
+    let handles: SliderHandle[] = [];
+    if (this.state.showCustomSliders) {
+      handles.push({
+        style: "bar",
+        position: this.state.leftSlider,
+        onDrag: (pos: number) => {
+          if (pos < this.state.rightSlider) {
+            this.setState({
+              leftSlider: pos
+            });
+          }
+        }
+      });
+      handles.push({
+        style: "bar",
+        position: this.state.rightSlider,
+        onDrag: (pos: number) => {
+          if (pos > this.state.leftSlider) {
+            this.setState({
+              rightSlider: pos
+            });
+          }
+        }
+      });
+    }
+    let fills: SliderFill[] = [];
+    if (this.state.showCustomFill) {
+      fills.push({
+        color: "yellow",
+        position: this.state.leftSlider,
+        size: this.state.rightSlider - this.state.leftSlider,
+        order: 1
+      });
+    }
     return (
-      <div style={{ display: "flex", height: "100vh" }}>
-        <div style={{ width: "50%", overflow: "auto", padding: "10px" }}>
-          <div>
-            <h2>General Player Settings</h2>
-            <ToggleButton
+      <Grid fluid style={{ height: "100vh" }}>
+        <Row style={{ height: "100%" }}>
+          <Col sm={12} lg={6}>
+            <h2>Video Player Playground</h2>
+            <Player
+              fluid
+              framerate={15}
+              src={video}
+              loop={this.state.loop}
+              hideControlsDelay={this.state.hideControlsDelay}
+              neverHideControlsUnlessFullscreen={
+                this.state.neverHideControlsUnlessFullscreen
+              }
+              enableDoubleClickSkip={this.state.enableDoubleClickSkip}
+              disableDoubleClickFullscreen={
+                this.state.disableDoubleClickFullscreen
+              }
+              disableInitialOverlay={this.state.disableInitialOverlay}
+              disableKeyboardControls={this.state.disableKeyboardControls}
+              render={(props: PlayerState, player: Player) => (
+                <ControlBar>
+                  <ControlRow align="flex-start">
+                    {this.state.showPlayPause && (
+                      <PlayPause
+                        isPlaying={props.playing}
+                        togglePlay={player.togglePlay}
+                      />
+                    )}
+                    {this.state.showProgressBar && (
+                      <ProgressBar
+                        seeking={props.seeking}
+                        duration={props.duration}
+                        currentTime={props.currentTime}
+                        buffered={props.buffered}
+                        setCurrentTime={player.seek}
+                        scrub={this.state.scrub}
+                        disableAnimate={this.state.disableAnimate}
+                        handles={handles}
+                        fills={fills}
+                      />
+                    )}
+                    {this.state.showPlaybackRate && (
+                      <PlaybackRate
+                        setRate={(rate: number) => (player.playbackRate = rate)}
+                        rate={props.playbackRate}
+                        rates={rates}
+                      />
+                    )}
+                    {this.state.showSkip && (
+                      <>
+                        <TimeSkip
+                          amount={this.state.skipAmount}
+                          skip={player.skip}
+                        />
+                        <TimeSkip
+                          reverse
+                          amount={this.state.skipAmount}
+                          skip={player.skip}
+                        />
+                      </>
+                    )}
+                    {this.state.showFrameSkip && (
+                      <>
+                        <FrameSkip frameRate={15} reverse skip={player.skip} />
+                        <FrameSkip frameRate={15} skip={player.skip} />
+                      </>
+                    )}
+                    {this.state.showTime && (
+                      <TimeDisplay
+                        duration={props.duration}
+                        currentTime={props.currentTime}
+                        displayType={TimeDisplayType.ELAPSED}
+                        secondaryDisplayType={TimeDisplayType.TOTAL}
+                      />
+                    )}
+                    {this.state.showVolume && (
+                      <VolumeControl
+                        muted={props.muted}
+                        volumeLevel={player.volume}
+                        setVolume={(volume: number) => (player.volume = volume)}
+                        mute={() => (player.muted = !player.muted)}
+                        alwaysShowVolumeSlider={this.state.alwaysShowSlider}
+                        hideMuteButton={this.state.hideMute}
+                        hideVolumeSlider={this.state.hideVolume}
+                      />
+                    )}
+                    {this.state.showFullscreen && (
+                      <FullScreenToggle
+                        isFullscreen={props.isFullscreen}
+                        toggleFullscreen={player.toggleFullscreen}
+                      />
+                    )}
+                    {this.state.showCustomTwo && (
+                      <Control>
+                        <button onClick={() => alert("You clicked a button!")}>
+                          <MdInfo size="100%" />
+                        </button>
+                      </Control>
+                    )}
+                    {this.state.showCustomOne && (
+                      <Control>
+                        <input
+                          value={player.volume * 100}
+                          onChange={e => {
+                            let volumeToSet = player.volume / 100;
+                            try {
+                              volumeToSet = parseFloat(e.target.value) / 100;
+                            } catch (e) {
+                              console.log("e :", e);
+                            }
+                            player.volume = volumeToSet;
+                          }}
+                        />
+                      </Control>
+                    )}
+                  </ControlRow>
+                </ControlBar>
+              )}
+            />
+
+            <Well style={{ marginTop: 10 }}>Code display coming soon!</Well>
+          </Col>
+          <Col
+            sm={12}
+            lg={6}
+            style={{ height: "100%", overflow: "auto", paddingBottom: 20 }}
+          >
+            <h2>Player Settings</h2>
+            <h3>Basic</h3>
+            <Button
+              active={this.state.disableInitialOverlay}
+              onClick={() =>
+                this.setState({
+                  disableInitialOverlay: !this.state.disableInitialOverlay
+                })
+              }
+            >
+              Disable inital play overlay
+            </Button>
+            <Button
               active={this.state.loop}
               onClick={() => this.setState({ loop: !this.state.loop })}
             >
-              Loop Video
-            </ToggleButton>
-            <ToggleButton
+              Loop Video on end
+            </Button>
+            <h3>Control Bar</h3>
+            <FormGroup>
+              <ControlLabel>Control bar hide delay</ControlLabel>
+              <FormControl
+                type="text"
+                value={this.state.hideControlsDelay}
+                onChange={(e: any) => {
+                  this.setState({ hideControlsDelay: e.target.value });
+                }}
+              />
+              <HelpBlock>
+                Enter time in ms. Negative/zero disables hide.
+              </HelpBlock>
+            </FormGroup>
+            <Button
               active={this.state.neverHideControlsUnlessFullscreen}
               onClick={() =>
                 this.setState({
@@ -114,24 +314,10 @@ export default class App extends React.Component<AppProps, AppState> {
                 })
               }
             >
-              Always show controls when not in fullscreen.
-            </ToggleButton>
-            <h4>
-              Hide controls delay. (in ms, negative or 0 disables hiding
-              completely)
-            </h4>
-            <input
-              onChange={e => {
-                let time: number;
-                try {
-                  time = parseFloat(e.target.value);
-                  this.setState({ hideControlsDelay: time });
-                } catch (e) {
-                  console.log("e :", e);
-                }
-              }}
-            />
-            <ToggleButton
+              Always show controls (except for fullscreen)
+            </Button>
+            <h3>Mouse/Keyboard Controls</h3>
+            <Button
               active={this.state.enableDoubleClickSkip}
               onClick={() =>
                 this.setState({
@@ -140,8 +326,8 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Enable double click to skip (player edges)
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.disableDoubleClickFullscreen}
               onClick={() =>
                 this.setState({
@@ -151,8 +337,8 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Disable double click to fullscreen
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.disableKeyboardControls}
               onClick={() =>
                 this.setState({
@@ -161,57 +347,51 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Disable keyboard controls
-            </ToggleButton>
-            <ToggleButton
-              active={this.state.disableInitialOverlay}
-              onClick={() =>
-                this.setState({
-                  disableInitialOverlay: !this.state.disableInitialOverlay
-                })
-              }
-            >
-              Disable inital play overlay
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Play/Pause Controls</h2>
-            <ToggleButton
+            </Button>
+            <h3>Play/Pause Controls</h3>
+            <Button
               active={this.state.showPlayPause}
               onClick={() =>
                 this.setState({ showPlayPause: !this.state.showPlayPause })
               }
             >
-              Toggle Play/Pause ToggleButton
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Progress Bar Controls</h2>
-            <ToggleButton
+              Toggle Play/Pause Button
+            </Button>
+            <h3>Progress Bar Control</h3>
+            <Button
               active={this.state.showProgressBar}
               onClick={() =>
-                this.setState({ showProgressBar: !this.state.showProgressBar })
+                this.setState({
+                  showProgressBar: !this.state.showProgressBar
+                })
               }
             >
               Toggle Progress Bar
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.scrub}
               onClick={() => this.setState({ scrub: !this.state.scrub })}
             >
               Toggle Scrubbing
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Volume Slider Controls</h2>
-            <ToggleButton
+            </Button>
+            <Button
+              active={this.state.disableAnimate}
+              onClick={() =>
+                this.setState({ disableAnimate: !this.state.disableAnimate })
+              }
+            >
+              Disable hover animation
+            </Button>
+            <h3>Volume Slider Control</h3>
+            <Button
               active={this.state.showVolume}
               onClick={() =>
                 this.setState({ showVolume: !this.state.showVolume })
               }
             >
               Toggle Volume Slider
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.hideMute}
               onClick={() =>
                 this.setState({
@@ -224,8 +404,8 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Hide Mute Button
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.hideVolume}
               onClick={() =>
                 this.setState({
@@ -238,8 +418,8 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Hide Volume Slider
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.alwaysShowSlider}
               onClick={() =>
                 this.setState({
@@ -248,11 +428,9 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Disable Volume Slider Animation
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Playback Rate Controls</h2>
-            <ToggleButton
+            </Button>
+            <h3>Playback Rate Controls</h3>
+            <Button
               active={this.state.showPlaybackRate}
               onClick={() =>
                 this.setState({
@@ -261,22 +439,26 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Toggle Playback Rate Menu
-            </ToggleButton>
-            <h4>Custom Rates (comma separated positive values, spaces OK)</h4>
-            <input
-              value={this.state.rates}
-              onChange={e => this.setState({ rates: e.target.value })}
-            />
-          </div>
-          <div>
-            <h2>Skip Controls</h2>
-            <ToggleButton
+            </Button>
+            <FormGroup>
+              <ControlLabel>Custom Rates</ControlLabel>
+              <FormControl
+                type="text"
+                value={this.state.rates}
+                onChange={(e: any) => this.setState({ rates: e.target.value })}
+              />
+              <HelpBlock>
+                Enter comma separated, positive values. Spaces are OK.
+              </HelpBlock>
+            </FormGroup>
+            <h3>Skip Controls</h3>
+            <Button
               active={this.state.showSkip}
               onClick={() => this.setState({ showSkip: !this.state.showSkip })}
             >
               Toggle Skip Buttons
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={true}
               onClick={() =>
                 this.setState({
@@ -290,55 +472,50 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               {`Change Skip Amount (Current: ${this.state.skipAmount})`}
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.showFrameSkip}
               onClick={() =>
                 this.setState({ showFrameSkip: !this.state.showFrameSkip })
               }
             >
               Toggle Frame Skip Buttons
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Time Display Controls</h2>
-            <ToggleButton
+            </Button>
+
+            <h3>Time Display Controls</h3>
+            <Button
               active={this.state.showTime}
               onClick={() => this.setState({ showTime: !this.state.showTime })}
             >
               Toggle Time Display
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Fullscreen display controls</h2>
-            <ToggleButton
+            </Button>
+            <h3>Fullscreen display controls</h3>
+            <Button
               active={this.state.showFullscreen}
               onClick={() =>
                 this.setState({ showFullscreen: !this.state.showFullscreen })
               }
             >
               Toggle Fullscreen Button
-            </ToggleButton>
-          </div>
-          <div>
-            <h2>Customization Examples</h2>
-            <ToggleButton
+            </Button>
+            <h3>Customization Examples</h3>
+            <Button
               active={this.state.showCustomTwo}
               onClick={() =>
                 this.setState({ showCustomTwo: !this.state.showCustomTwo })
               }
             >
               Toggle Custom Dummy Component
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.showCustomOne}
               onClick={() =>
                 this.setState({ showCustomOne: !this.state.showCustomOne })
               }
             >
               Toggle Custom Volume Component
-            </ToggleButton>
-            <ToggleButton
+            </Button>
+            <Button
               active={this.state.showCustomSliders}
               onClick={() =>
                 this.setState({
@@ -347,121 +524,41 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Toggle Custom Slider Component
-            </ToggleButton>
-          </div>
-        </div>
-        <div style={{ width: "50%" }}>
-          <Player
-            fluid
-            framerate={15}
-            src={video}
-            loop={this.state.loop}
-            hideControlsDelay={this.state.hideControlsDelay}
-            neverHideControlsUnlessFullscreen={
-              this.state.neverHideControlsUnlessFullscreen
-            }
-            enableDoubleClickSkip={this.state.enableDoubleClickSkip}
-            disableDoubleClickFullscreen={
-              this.state.disableDoubleClickFullscreen
-            }
-            disableInitialOverlay={this.state.disableInitialOverlay}
-            disableKeyboardControls={this.state.disableKeyboardControls}
-            render={(props: PlayerState, player: Player) => (
-              <ControlBar>
-                <ControlRow align="flex-start">
-                  {this.state.showPlayPause && (
-                    <PlayPause
-                      isPlaying={props.playing}
-                      togglePlay={player.togglePlay}
+            </Button>
+            <Button
+              active={this.state.showCustomFill}
+              onClick={() =>
+                this.setState({
+                  showCustomFill: !this.state.showCustomFill
+                })
+              }
+            >
+              Toggle Custom Fill Component
+            </Button>
+            {this.state.showCustomSliders ||
+              (this.state.showCustomFill && (
+                <Form inline>
+                  <FormGroup>
+                    <ControlLabel>Left Slider</ControlLabel>
+                    <FormControl
+                      disabled
+                      type="text"
+                      value={this.state.leftSlider}
                     />
-                  )}
-                  {this.state.showProgressBar && (
-                    <ProgressBar
-                      seeking={props.seeking}
-                      duration={props.duration}
-                      currentTime={props.currentTime}
-                      buffered={props.buffered}
-                      setCurrentTime={player.seek}
-                      scrub={this.state.scrub}
+                  </FormGroup>
+                  <FormGroup>
+                    <ControlLabel>Right Slider</ControlLabel>
+                    <FormControl
+                      disabled
+                      type="text"
+                      value={this.state.rightSlider}
                     />
-                  )}
-                  {this.state.showPlaybackRate && (
-                    <PlaybackRate
-                      setRate={(rate: number) => (player.playbackRate = rate)}
-                      rate={props.playbackRate}
-                      rates={rates}
-                    />
-                  )}
-                  {this.state.showSkip && (
-                    <>
-                      <TimeSkip
-                        amount={this.state.skipAmount}
-                        skip={player.skip}
-                      />
-                      <TimeSkip
-                        reverse
-                        amount={this.state.skipAmount}
-                        skip={player.skip}
-                      />
-                    </>
-                  )}
-                  {this.state.showFrameSkip && (
-                    <>
-                      <FrameSkip frameRate={15} reverse skip={player.skip} />
-                      <FrameSkip frameRate={15} skip={player.skip} />
-                    </>
-                  )}
-                  {this.state.showTime && (
-                    <TimeDisplay
-                      duration={props.duration}
-                      currentTime={props.currentTime}
-                      displayType={TimeDisplayType.ELAPSED}
-                      secondaryDisplayType={TimeDisplayType.TOTAL}
-                    />
-                  )}
-                  {this.state.showVolume && (
-                    <VolumeControl
-                      muted={props.muted}
-                      volumeLevel={player.volume}
-                      setVolume={(volume: number) => (player.volume = volume)}
-                      mute={() => (player.muted = !player.muted)}
-                    />
-                  )}
-                  {this.state.showFullscreen && (
-                    <FullScreenToggle
-                      isFullscreen={props.isFullscreen}
-                      toggleFullscreen={player.toggleFullscreen}
-                    />
-                  )}
-                  {this.state.showCustomOne && (
-                    <Control>
-                      <button onClick={() => alert("You clicked a button!")}>
-                        <MdInfo size="100%" />
-                      </button>
-                    </Control>
-                  )}
-                  {this.state.showCustomTwo && (
-                    <Control>
-                      <input
-                        value={player.volume * 100}
-                        onChange={e => {
-                          let volumeToSet = player.volume / 100;
-                          try {
-                            volumeToSet = parseFloat(e.target.value) / 100;
-                          } catch (e) {
-                            console.log("e :", e);
-                          }
-                          player.volume = volumeToSet;
-                        }}
-                      />
-                    </Control>
-                  )}
-                </ControlRow>
-              </ControlBar>
-            )}
-          />
-        </div>
-      </div>
+                  </FormGroup>
+                </Form>
+              ))}
+          </Col>
+        </Row>
+      </Grid>
     );
   }
 }

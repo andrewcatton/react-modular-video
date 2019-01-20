@@ -17,7 +17,7 @@ const RATES = [0.5, 1, 1.5, 2];
 
 const RateMenu = styled.div<{ opaque?: boolean }>`
   position: absolute;
-  bottom: 100%;
+  bottom: calc(100% + 6px);
   width: 100%;
   background: ${props => (props.opaque ? "black" : "rgba(0, 0, 0, 0.5)")};
   button {
