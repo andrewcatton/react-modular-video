@@ -1,6 +1,6 @@
 {
   "name": "react-modular-video",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An extendable, modular, HTML5 video player built in TypeScript and React.",
   "main": "src/index.tsx",
   "author": "Steven Gresh",
@@ -13,6 +13,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stvngrsh/react-modular-video.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stvngrsh/react-modular-video/issues"
   },
   "homepage": "https://stevengresh.com/react-modular-video",
   "dependencies": {
