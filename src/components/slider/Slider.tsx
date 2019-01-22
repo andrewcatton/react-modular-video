@@ -62,6 +62,8 @@ const RangeSlider = styled.div<{ expand: boolean; width?: string }>`
 
   display: flex;
   align-items: center;
+  overflow: hidden;
+  border-radius: 4px;
 `;
 
 const RangeSliderRail = styled.div`
