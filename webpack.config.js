@@ -5,7 +5,7 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 
 const env = process.env.WEBPACK_BUILD || "development";
-const libraryName = "ReactModularVideo";
+const libraryName = "react-modular-video";
 
 function DtsBundlePlugin() {}
 DtsBundlePlugin.prototype.apply = function(compiler) {
