@@ -62,7 +62,6 @@ const RangeSlider = styled.div<{ expand: boolean; width?: string }>`
 
   display: flex;
   align-items: center;
-  overflow: hidden;
   border-radius: 4px;
 `;
 
@@ -92,6 +91,15 @@ const RangeFill = styled.div.attrs<{
   background-color: ${props => props.color};
   z-index: ${props => props.order};
   // transition: width 0.1s ease;
+`;
+
+const RangeFillCrop = styled.div`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+
+  overflow: hidden;
+  border-radius: 4px;
 `;
 
 const RangeHandle = styled.div.attrs<{ position: number; expand: boolean }>({
@@ -198,6 +206,7 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
   };
   sliderRailRef!: HTMLDivElement;
   setSliderRailRef = (el: HTMLDivElement) => {
+    console.log("el :", el);
     this.sliderRailRef = el;
   };
   handleRef!: HTMLDivElement;
@@ -335,7 +344,8 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
       this.props.maxVal !== undefined &&
       this.props.maxVal > 0
     ) {
-      return (this.props.currVal / this.props.maxVal) * 100;
+      const val = (this.props.currVal / this.props.maxVal) * 100;
+      return Math.max(Math.min(val, 100), 0);
     } else {
       return 0;
     }
@@ -349,14 +359,23 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
       this.props.maxVal !== undefined &&
       this.props.maxVal > 0
     ) {
-      return (slider.position / this.props.maxVal) * 100;
+      const val = (slider.position / this.props.maxVal) * 100;
+      return Math.max(Math.min(val, 100), 0);
     } else {
       return 0;
     }
   };
 
   getFillPos = (pos: number) => {
-    return (pos / this.props.maxVal) * 100;
+    let calcPos = (pos / this.props.maxVal) * 100;
+    return Math.max(Math.min(calcPos, 100), 0);
+  };
+
+  getFillSize = (size: number, pos: number) => {
+    let calcPos = (pos / this.props.maxVal) * 100;
+    let calcSize = (size / this.props.maxVal) * 100;
+
+    return Math.max(Math.min(calcSize, 100 - calcPos), 0);
   };
 
   handleMouseOver = (e: React.MouseEvent) => {
@@ -467,19 +486,20 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
             <RangeHandleCircle expand={expand} />
           </RangeHandle>
         </RangeSliderRail>
-
-        {this.props.fills &&
-          this.props.fills.map((fill, index) => {
-            return (
-              <RangeFill
-                order={fill.order}
-                color={fill.color}
-                key={index}
-                size={this.getFillPos(fill.size)}
-                position={this.getFillPos(fill.position)}
-              />
-            );
-          })}
+        <RangeFillCrop>
+          {this.props.fills &&
+            this.props.fills.map((fill, index) => {
+              return (
+                <RangeFill
+                  order={fill.order}
+                  color={fill.color}
+                  key={index}
+                  size={this.getFillSize(fill.size, fill.position)}
+                  position={this.getFillPos(fill.position)}
+                />
+              );
+            })}
+        </RangeFillCrop>
       </RangeSlider>
     );
   }

@@ -13,6 +13,10 @@ export interface ProgressBarProps {
   fills?: SliderFill[];
   handles?: SliderHandle[];
   disableAnimate?: boolean;
+  bufferedFillOrder?: number;
+  bufferedFillColor?: string;
+  progressFillOrder?: number;
+  progressFillColor?: string;
 }
 
 export interface ProgressBarState {}
@@ -52,10 +56,12 @@ export class ProgressBar extends React.Component<
   public render() {
     let fills: SliderFill[] = [];
     fills.push({
-      color: "#0095ff",
+      color: this.props.progressFillColor
+        ? this.props.progressFillColor
+        : "#0095ff",
       size: this.props.currentTime,
       position: 0,
-      order: 2
+      order: this.props.progressFillOrder ? this.props.progressFillOrder : 2
     });
 
     let { buffered } = this.props;
@@ -64,10 +70,12 @@ export class ProgressBar extends React.Component<
         const left = buffered.start(i);
         const right = buffered.end(i);
         fills.push({
-          color: "#abb1bf",
+          color: this.props.bufferedFillColor
+            ? this.props.bufferedFillColor
+            : "#abb1bf",
           position: left,
           size: right - left,
-          order: 1
+          order: this.props.bufferedFillOrder ? this.props.bufferedFillOrder : 1
         });
       }
     }

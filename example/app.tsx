@@ -97,7 +97,7 @@ export default class App extends React.Component<AppProps, AppState> {
       showCustomFill: false,
       disableAnimate: false,
       leftSlider: 50,
-      rightSlider: 100
+      rightSlider: 400
     };
   }
 

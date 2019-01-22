@@ -36,13 +36,14 @@ const VolumeControlRow = styled(Control)`
   display: flex;
   flex-direction: row;
   align-items: center;
+  overflow: hidden;
+  padding-right: 5px;
 `;
 
 const AnimateMenu = styled.div<{ open: boolean }>`
   opacity: ${props => (props.open ? 1 : 0)};
   width: ${props => (props.open ? VOLUME_WIDTH + 5 : 0)}px;
   transition: all 0.5s ease;
-  overflow: hidden;
   padding-left: ${props => (props.open ? 5 : 0)}px;
 `;
 

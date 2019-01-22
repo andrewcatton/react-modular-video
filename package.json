@@ -1,6 +1,6 @@
 {
   "name": "react-modular-video",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "An extendable, modular, HTML5 video player built in TypeScript and React.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -9,7 +9,8 @@
   "scripts": {
     "start": "WEBPACK_BUILD=development webpack-dev-server",
     "build:docs": "WEBPACK_BUILD=development webpack",
-    "build": "tsc && WEBPACK_BUILD=production webpack"
+    "build": "tsc && WEBPACK_BUILD=production webpack",
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,8 @@
     "styled-components": "^3.0.0"
   },
   "dependencies": {
-    "react-icons": "3.2.2"
+    "react-icons": "3.2.2",
+    "styled-components": "^3.3.3"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",
