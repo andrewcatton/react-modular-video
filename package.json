@@ -1,8 +1,8 @@
 {
   "name": "react-modular-video",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An extendable, modular, HTML5 video player built in TypeScript and React.",
-  "main": "src/index.tsx",
+  "main": "lib/index.js",
   "author": "Steven Gresh",
   "license": "MIT",
   "scripts": {

@@ -11,7 +11,7 @@ const config = {
   entry: `${__dirname}/src/index`,
 
   output: {
-    filename: "react-modular-video.js",
+    filename: "index.js",
     library: "ReactModularVideo",
     libraryTarget: "umd",
     path: `${__dirname}/lib`
