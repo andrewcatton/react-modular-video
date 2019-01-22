@@ -4,13 +4,25 @@ import { Control } from "../ControlBar";
 export interface PlayPauseProps {
   togglePlay: () => void;
   isPlaying: boolean;
+  playIcon?: JSX.Element;
+  pauseIcon?: JSX.Element;
 }
 
 export function PlayPause(props: PlayPauseProps) {
   return (
     <Control>
       <button onKeyDown={e => e.stopPropagation()} onClick={props.togglePlay}>
-        {props.isPlaying ? <MdPause /> : <MdPlayArrow />}
+        {props.isPlaying ? (
+          props.pauseIcon ? (
+            props.pauseIcon
+          ) : (
+            <MdPause />
+          )
+        ) : props.playIcon ? (
+          props.playIcon
+        ) : (
+          <MdPlayArrow />
+        )}
       </button>
     </Control>
   );

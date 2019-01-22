@@ -17,6 +17,11 @@ export interface VolumeControlProps {
   hideMuteButton?: boolean;
   hideVolumeSlider?: boolean;
   alwaysShowVolumeSlider?: boolean;
+  showVolumeVariations?: boolean;
+  volumeOffIcon?: JSX.Element;
+  volumeUpIcon?: JSX.Element;
+  volumeDownIcon?: JSX.Element;
+  volumeMuteIcon?: JSX.Element;
 }
 
 export interface VolumeControlState {
@@ -57,14 +62,26 @@ export class VolumeControl extends React.Component<
   }
 
   getIcon() {
+    const {
+      volumeDownIcon,
+      volumeOffIcon,
+      volumeMuteIcon,
+      volumeUpIcon
+    } = this.props;
     if (this.props.muted) {
-      return <MdVolumeOff />;
-    } else if (this.props.volumeLevel > 0.8) {
-      return <MdVolumeUp />;
-    } else if (this.props.volumeLevel > 0.4) {
-      return <MdVolumeDown />;
+      return volumeOffIcon ? volumeOffIcon : <MdVolumeOff />;
     } else {
-      return <MdVolumeMute />;
+      if (this.props.showVolumeVariations) {
+        if (this.props.volumeLevel > 0.8) {
+          return volumeUpIcon ? volumeUpIcon : <MdVolumeUp />;
+        } else if (this.props.volumeLevel > 0.4) {
+          return volumeDownIcon ? volumeDownIcon : <MdVolumeDown />;
+        } else {
+          return volumeMuteIcon ? volumeMuteIcon : <MdVolumeMute />;
+        }
+      } else {
+        return volumeUpIcon ? volumeUpIcon : <MdVolumeUp />;
+      }
     }
   }
 

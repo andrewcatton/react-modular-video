@@ -13,6 +13,8 @@ export interface TimeSkipProps {
   amount: 5 | 10 | 30;
   reverse?: boolean;
   skip: (time: number) => void;
+  forwardIcon?: JSX.Element;
+  replayIcon?: JSX.Element;
 }
 
 function getReplayIcon(amount: number) {
@@ -43,7 +45,11 @@ export function TimeSkip(props: TimeSkipProps) {
         onClick={() => props.skip((props.reverse ? -1 : 1) * props.amount)}
       >
         {props.reverse
-          ? getReplayIcon(props.amount)
+          ? props.replayIcon
+            ? props.replayIcon
+            : getReplayIcon(props.amount)
+          : props.forwardIcon
+          ? props.forwardIcon
           : getForwardIcon(props.amount)}
       </button>
     </Control>

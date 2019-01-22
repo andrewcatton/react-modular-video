@@ -26,6 +26,13 @@ export interface PlayOverlayProps {
   setFadeIconTimer: () => void;
 
   hideCursor: boolean;
+  loadingIcon?: JSX.Element;
+  pauseIcon?: JSX.Element;
+  playIcon?: JSX.Element;
+  forwardIcon?: JSX.Element;
+  rewindIcon?: JSX.Element;
+  volumeDownIcon?: JSX.Element;
+  volumeUpIcon?: JSX.Element;
 }
 
 export interface PlayOverlayState {
@@ -174,19 +181,27 @@ export default class PlayOverlay extends React.Component<
   }
 
   getIcon = () => {
+    const {
+      pauseIcon,
+      playIcon,
+      forwardIcon,
+      rewindIcon,
+      volumeDownIcon,
+      volumeUpIcon
+    } = this.props;
     switch (this.props.icon) {
       case IconType.PAUSE:
-        return <MdPauseCircleFilled size={"100%"} />;
+        return pauseIcon ? pauseIcon : <MdPauseCircleFilled size={"100%"} />;
       case IconType.PLAY:
-        return <MdPlayCircleFilled size={"100%"} />;
+        return playIcon ? playIcon : <MdPlayCircleFilled size={"100%"} />;
       case IconType.FORWARD:
-        return <MdFastForward size={"100%"} />;
+        return forwardIcon ? forwardIcon : <MdFastForward size={"100%"} />;
       case IconType.REWIND:
-        return <MdFastRewind size={"100%"} />;
+        return rewindIcon ? rewindIcon : <MdFastRewind size={"100%"} />;
       case IconType.VOLUME_DOWN:
-        return <MdVolumeDown size={"100%"} />;
+        return volumeDownIcon ? volumeDownIcon : <MdVolumeDown size={"100%"} />;
       case IconType.VOLUME_UP:
-        return <MdVolumeUp size={"100%"} />;
+        return volumeUpIcon ? volumeUpIcon : <MdVolumeUp size={"100%"} />;
     }
   };
   iconRef?: HTMLDivElement;
@@ -222,7 +237,7 @@ export default class PlayOverlay extends React.Component<
               </OverlayIcon>
             ) : this.props.loading && this.props.playing ? (
               <OverlayLoadingIcon>
-                <Loader />
+                {this.props.loadingIcon ? this.props.loadingIcon : <Loader />}
               </OverlayLoadingIcon>
             ) : null}
           </Center>

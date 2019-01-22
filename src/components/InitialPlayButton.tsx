@@ -14,10 +14,14 @@ const Overlay = styled.button`
   cursor: pointer;
 `;
 
-export function InitialPlayButton() {
+interface InitialPlayButtonProps {
+  icon?: JSX.Element;
+}
+
+export function InitialPlayButton(props: InitialPlayButtonProps) {
   return (
     <Overlay>
-      <MdPlayCircleFilled size={40} />
+      {props.icon ? props.icon : <MdPlayCircleFilled size={80} />}
     </Overlay>
   );
 }

@@ -6,6 +6,8 @@ export interface FrameSkipProps {
   reverse?: boolean;
   frameRate?: number;
   skip: (time: number) => void;
+  forwardIcon?: JSX.Element;
+  reverseIcon?: JSX.Element;
 }
 
 export function FrameSkip(props: FrameSkipProps) {
@@ -19,7 +21,17 @@ export function FrameSkip(props: FrameSkipProps) {
           )
         }
       >
-        {props.reverse ? <MdSkipPrevious /> : <MdSkipNext />}
+        {props.reverse ? (
+          props.reverseIcon ? (
+            props.reverseIcon
+          ) : (
+            <MdSkipPrevious />
+          )
+        ) : props.forwardIcon ? (
+          props.forwardIcon
+        ) : (
+          <MdSkipNext />
+        )}
       </button>
     </Control>
   );

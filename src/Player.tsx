@@ -63,6 +63,15 @@ export interface PlayerProps {
   enableDoubleClickSkip?: boolean;
   disableInitialOverlay?: boolean;
   disableKeyboardControls?: boolean;
+
+  initialOverlayIcon?: JSX.Element;
+  loadingIcon?: JSX.Element;
+  pauseIcon?: JSX.Element;
+  playIcon?: JSX.Element;
+  forwardIcon?: JSX.Element;
+  rewindIcon?: JSX.Element;
+  volumeDownIcon?: JSX.Element;
+  volumeUpIcon?: JSX.Element;
 }
 
 export interface PlayerState {
@@ -643,9 +652,18 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
             this.props.render(this.state, this)}
           {!this.props.disableInitialOverlay &&
             this.videoRef &&
-            !this.state.hasStarted && <InitialPlayButton />}
+            !this.state.hasStarted && (
+              <InitialPlayButton icon={this.props.initialOverlayIcon} />
+            )}
           {this.videoRef && (
             <PlayOverlay
+              loadingIcon={this.props.loadingIcon}
+              pauseIcon={this.props.pauseIcon}
+              playIcon={this.props.playIcon}
+              forwardIcon={this.props.forwardIcon}
+              rewindIcon={this.props.rewindIcon}
+              volumeDownIcon={this.props.volumeDownIcon}
+              volumeUpIcon={this.props.volumeUpIcon}
               hideCursor={hideCursor}
               loading={this.state.waiting}
               playing={this.state.playing}
