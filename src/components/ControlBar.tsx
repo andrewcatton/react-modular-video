@@ -59,7 +59,13 @@ export const ControlRow = styled.div<{
   }
 `;
 
-export const ControlCol = styled.div`
+export const ControlCol = styled.div<{ flex?: "grow" | "no-shrink" }>`
+  flex: ${props =>
+    props.flex
+      ? props.flex === "grow"
+        ? "1 0 auto"
+        : "0 0 auto"
+      : "0 1 auto"};
   display: flex;
   flex-direction: column;
   padding-top: 5px;
