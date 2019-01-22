@@ -21,6 +21,7 @@ export type SliderHandle = {
 };
 
 export interface SliderProps {
+  disableMainSlider?: boolean;
   onDrag?: (position: number) => void;
   onDragEnd?: (position: number) => void;
   minVal?: number;
@@ -469,22 +470,24 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
                 </RangeHandle>
               );
             })}
-          <RangeHandle
-            expand={expand}
-            innerRef={this.setHandleRef}
-            position={handlePos}
-            onMouseDown={this.handleHandleStart}
-            onMouseUp={this.handleEnd}
-            onTouchStart={this.handleHandleStart}
-            onTouchEnd={this.handleEnd}
-          >
-            {this.state.grab && this.props.toolTipDisplay && (
-              <RangeHandleTip>
-                {this.props.toolTipDisplay(handlePos)}
-              </RangeHandleTip>
-            )}
-            <RangeHandleCircle expand={expand} />
-          </RangeHandle>
+          {!this.props.disableMainSlider && (
+            <RangeHandle
+              expand={expand}
+              innerRef={this.setHandleRef}
+              position={handlePos}
+              onMouseDown={this.handleHandleStart}
+              onMouseUp={this.handleEnd}
+              onTouchStart={this.handleHandleStart}
+              onTouchEnd={this.handleEnd}
+            >
+              {this.state.grab && this.props.toolTipDisplay && (
+                <RangeHandleTip>
+                  {this.props.toolTipDisplay(handlePos)}
+                </RangeHandleTip>
+              )}
+              <RangeHandleCircle expand={expand} />
+            </RangeHandle>
+          )}
         </RangeSliderRail>
         <RangeFillCrop>
           {this.props.fills &&

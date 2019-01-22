@@ -17,6 +17,7 @@ export interface ProgressBarProps {
   bufferedFillColor?: string;
   progressFillOrder?: number;
   progressFillColor?: string;
+  disableMainSlider?: boolean;
 }
 
 export interface ProgressBarState {}
@@ -55,14 +56,16 @@ export class ProgressBar extends React.Component<
 
   public render() {
     let fills: SliderFill[] = [];
-    fills.push({
-      color: this.props.progressFillColor
-        ? this.props.progressFillColor
-        : "#0095ff",
-      size: this.props.currentTime,
-      position: 0,
-      order: this.props.progressFillOrder ? this.props.progressFillOrder : 2
-    });
+    if (!this.props.disableMainSlider) {
+      fills.push({
+        color: this.props.progressFillColor
+          ? this.props.progressFillColor
+          : "#0095ff",
+        size: this.props.currentTime,
+        position: 0,
+        order: this.props.progressFillOrder ? this.props.progressFillOrder : 2
+      });
+    }
 
     let { buffered } = this.props;
     if (buffered) {
@@ -86,6 +89,7 @@ export class ProgressBar extends React.Component<
     return (
       <Control flex="grow">
         <Slider
+          disableMainSlider={this.props.disableMainSlider}
           animate={!this.props.disableAnimate}
           onDrag={this.onDrag}
           onDragEnd={this.onDragEnd}
