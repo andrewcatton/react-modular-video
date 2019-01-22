@@ -1,18 +1,3 @@
-declare global {
-  interface Document {
-    webkitExitFullscreen: () => Promise<void>;
-    mozCancelFullScreen: () => Promise<void>;
-    msExitFullscreen: () => Promise<void>;
-    fullscreenElement: Element;
-    webkitFullscreenElement: Element;
-    mozFullScreenElement: Element;
-    msFullscreenElement: Element;
-    webkitFullscreenEnabled: boolean;
-    mozFullScreenEnabled: boolean;
-    msFullscreenEnabled: boolean;
-  }
-}
-
 class Fullscreen {
   request(elm) {
     if (elm.requestFullscreen) {
@@ -29,30 +14,30 @@ class Fullscreen {
   exit() {
     if (document.exitFullscreen) {
       document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.msExitFullscreen) {
-      document.msExitFullscreen();
+    } else if (document["webkitExitFullscreen"]) {
+      document["webkitExitFullscreen"]();
+    } else if (document["mozCancelFullScreen"]) {
+      document["mozCancelFullScreen"]();
+    } else if (document["msExitFullscreen"]) {
+      document["msExitFullscreen"]();
     }
   }
 
   get isFullscreen() {
     return (
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement
+      document["fullscreenElement"] ||
+      document["webkitFullscreenElement"] ||
+      document["mozFullScreenElement"] ||
+      document["msFullscreenElement"]
     );
   }
 
   get enabled() {
     return (
-      document.fullscreenEnabled ||
-      document.webkitFullscreenEnabled ||
-      document.mozFullScreenEnabled ||
-      document.msFullscreenEnabled
+      document["fullscreenEnabled"] ||
+      document["webkitFullscreenEnabled"] ||
+      document["mozFullScreenEnabled"] ||
+      document["msFullscreenEnabled"]
     );
   }
 

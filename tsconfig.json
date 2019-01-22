@@ -4,8 +4,9 @@
     "target": "esnext",
     "lib": ["es6", "dom"],
     "sourceMap": true,
-    "allowJs": false,
     "jsx": "react",
+    "declaration": true,
+    "outDir": "_dist",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,6 +16,7 @@
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": false,
     "noImplicitAny": false,
+    "emitDeclarationOnly": true,
     "moduleResolution": "node",
     "baseUrl": "./",
     "paths": {

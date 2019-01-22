@@ -1,14 +1,14 @@
 {
   "name": "react-modular-video",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "An extendable, modular, HTML5 video player built in TypeScript and React.",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "author": "Steven Gresh",
   "license": "MIT",
   "scripts": {
     "start": "WEBPACK_BUILD=development webpack-dev-server",
     "build:docs": "WEBPACK_BUILD=development webpack",
-    "build": "WEBPACK_BUILD=production webpack"
+    "build": "tsc && WEBPACK_BUILD=production webpack"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   "files": [
     "LICENSE",
     "README.md",
-    "lib",
+    "dist",
     "src"
   ],
   "peerDependencies": {
@@ -47,6 +47,7 @@
     "babel-loader": "8.0.4",
     "clean-webpack-plugin": "1.0.0",
     "css-loader": "2.0.2",
+    "dts-bundle": "^0.7.3",
     "file-loader": "3.0.1",
     "hls.js": "0.12.2",
     "html-loader": "0.5.5",

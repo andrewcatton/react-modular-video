@@ -5,16 +5,29 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 
 const env = process.env.WEBPACK_BUILD || "development";
+const libraryName = "ReactModularVideo";
+
+function DtsBundlePlugin() {}
+DtsBundlePlugin.prototype.apply = function(compiler) {
+  compiler.plugin("done", function() {
+    const dts = require("dts-bundle");
+    dts.bundle({
+      name: libraryName,
+      main: "_dist/src/index.d.ts",
+      out: "../../dist/index.d.ts"
+    });
+  });
+};
 
 const config = {
   mode: env,
   entry: `${__dirname}/src/index`,
-
+  devtool: "source-map",
   output: {
     filename: "index.js",
-    library: "ReactModularVideo",
+    library: libraryName,
     libraryTarget: "umd",
-    path: `${__dirname}/lib`
+    path: `${__dirname}/dist`
   },
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
@@ -44,13 +57,17 @@ const config = {
       }
     ]
   },
-  plugins: [new CleanWebpackPlugin(["lib"]), new BundleAnalyzerPlugin()]
+  plugins: [
+    new CleanWebpackPlugin(["dist"]),
+    new BundleAnalyzerPlugin({
+      analyzerMode: "disabled"
+    })
+  ]
 };
 if (env === "development") {
-  config.devtool = "source-map";
   config.devServer = {
     disableHostCheck: true,
-    contentBase: __dirname + "/lib",
+    contentBase: __dirname + "/dist",
     historyApiFallback: true,
     stats: {
       chunks: false
@@ -70,6 +87,7 @@ if (env === "development") {
   });
 }
 if (env === "production") {
+  config.plugins.push(new DtsBundlePlugin());
   config.externals = [
     {
       react: {
