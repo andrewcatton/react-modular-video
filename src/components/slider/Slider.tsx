@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { formatTime } from "src/utils/helpers";
 
 export type ProgressDragEvent =
   | React.MouseEvent<HTMLDivElement>

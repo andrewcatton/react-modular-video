@@ -237,16 +237,6 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     this.handleProgress = throttle(this.handleProgress, 250);
   }
 
-  componentWillUpdate(nextProps: PlayerProps, nextState: PlayerState) {
-    this.handleStateChange(nextState);
-  }
-
-  handleStateChange = (state: PlayerState) => {
-    if (this.props.subscribeToStateChange) {
-      this.props.subscribeToStateChange(state);
-    }
-  };
-
   componentDidMount() {
     this.handleResize();
     window.addEventListener("resize", this.handleResize);
@@ -269,6 +259,12 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
       this.handleResize();
     }
   }
+
+  handleStateChange = (state: PlayerState) => {
+    if (this.props.subscribeToStateChange) {
+      this.props.subscribeToStateChange(state);
+    }
+  };
 
   // Handle Fullscreen Change
   handleFullScreenChange = () => {
@@ -403,44 +399,46 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }
   };
 
-  updatePlayer = (event: VideoEvent) => {
-    this.setState({
-      playbackRate: this.videoRef.playbackRate,
-      muted: this.muted,
-      volume: this.volume,
-      currentTime: this.videoRef.currentTime,
-      duration: this.videoRef.duration,
-      buffered: this.videoRef.buffered
-    });
+  updatePlayer = (event: VideoEvent, state?: Partial<PlayerState>) => {
+    this.setState(
+      {
+        playbackRate: this.videoRef.playbackRate,
+        muted: this.muted,
+        volume: this.volume,
+        currentTime: this.videoRef.currentTime,
+        duration: this.videoRef.duration,
+        buffered: this.videoRef.buffered,
+        ...(state as PlayerState)
+      },
+      () => this.handleStateChange(this.state)
+    );
   };
 
   // Fired when the user agent
   // begins looking for media data
-  handleLoadStart = createHandler(this.props.onLoadStart, () =>
-    this.setState({ buffered: this.videoRef.buffered })
+  handleLoadStart = createHandler(this.props.onLoadStart, this.updatePlayer);
+
+  // A handler for events that
+  // signal that waiting has ended
+  handleCanPlay = createHandler(this.props.onCanPlay, e =>
+    this.updatePlayer(e, { waiting: false })
   );
 
   // A handler for events that
   // signal that waiting has ended
-  handleCanPlay = createHandler(this.props.onCanPlay, () =>
-    this.setState({ waiting: false })
+  handleCanPlayThrough = createHandler(this.props.onCanPlayThrough, e =>
+    this.updatePlayer(e, { waiting: false })
   );
 
   // A handler for events that
   // signal that waiting has ended
-  handleCanPlayThrough = createHandler(this.props.onCanPlayThrough, () =>
-    this.setState({ waiting: false })
-  );
-
-  // A handler for events that
-  // signal that waiting has ended
-  handlePlaying = createHandler(this.props.onPlaying, () =>
-    this.setState({ waiting: false })
+  handlePlaying = createHandler(this.props.onPlaying, e =>
+    this.updatePlayer(e, { waiting: false })
   );
 
   // Fired whenever the media has been started
-  handlePlay = createHandler(this.props.onPlay, () =>
-    this.setState({
+  handlePlay = createHandler(this.props.onPlay, e =>
+    this.updatePlayer(e, {
       ended: false,
       playing: true,
       waiting: false,
@@ -449,8 +447,8 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
   );
 
   // Fired whenever the media has been paused
-  handlePause = createHandler(this.props.onPause, () =>
-    this.setState({ playing: false })
+  handlePause = createHandler(this.props.onPause, e =>
+    this.updatePlayer(e, { playing: false })
   );
 
   // Fired when the duration of
@@ -462,13 +460,11 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
 
   // Fired while the user agent
   // is downloading media data
-  handleProgress = createHandler(this.props.onProgress, event =>
-    this.setState({ buffered: this.videoRef.buffered })
-  );
+  handleProgress = createHandler(this.props.onProgress, this.updatePlayer);
 
   // Fired when the end of the media resource
   // is reached (currentTime == duration)
-  handleEnded = createHandler(this.props.onEnded, event => {
+  handleEnded = createHandler(this.props.onEnded, e => {
     const { loop } = this.props;
     if (loop) {
       this.seek(0);
@@ -479,8 +475,8 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
   });
 
   // Fired whenever the media begins waiting
-  handleWaiting = createHandler(this.props.onWaiting, event =>
-    this.setState({ waiting: true })
+  handleWaiting = createHandler(this.props.onWaiting, e =>
+    this.updatePlayer(e, { waiting: false })
   );
 
   // Fired whenever the player
@@ -516,7 +512,6 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     if (startTime && startTime > 0) {
       this.videoRef.currentTime = startTime;
     }
-    console.log("this.videoRef1 :", this.videoRef.buffered);
     this.updatePlayer(event);
   });
 
@@ -556,7 +551,6 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
   handleKeyDown = (e: React.KeyboardEvent) => {
     if (!this.props.disableKeyboardControls) {
       this.startControlsTimer();
-      console.log("e.key :", e.key, e.keyCode, e.charCode);
 
       switch (e.keyCode) {
         case 32:
