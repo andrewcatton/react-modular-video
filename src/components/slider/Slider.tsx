@@ -207,7 +207,6 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
   };
   sliderRailRef!: HTMLDivElement;
   setSliderRailRef = (el: HTMLDivElement) => {
-    console.log("el :", el);
     this.sliderRailRef = el;
   };
   handleRef!: HTMLDivElement;

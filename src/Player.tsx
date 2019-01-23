@@ -52,6 +52,7 @@ export interface PlayerProps {
   onTimeUpdate?: VideoEventHandler;
   onRateChange?: VideoEventHandler;
   onVolumeChange?: VideoEventHandler;
+  subscribeToStateChange?: (state: PlayerState) => void;
 
   onResize?: () => void;
   render: (props: PlayerState, player: Player) => JSX.Element;
@@ -232,8 +233,19 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
       volume: this.props.volume || 1,
       showIcon: false
     };
+    this.handleStateChange(this.state);
     this.handleProgress = throttle(this.handleProgress, 250);
   }
+
+  componentWillUpdate(nextProps: PlayerProps, nextState: PlayerState) {
+    this.handleStateChange(nextState);
+  }
+
+  handleStateChange = (state: PlayerState) => {
+    if (this.props.subscribeToStateChange) {
+      this.props.subscribeToStateChange(state);
+    }
+  };
 
   componentDidMount() {
     this.handleResize();
