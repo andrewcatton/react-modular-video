@@ -59,6 +59,7 @@ export interface PlayerProps {
 
   loop?: boolean;
   hideControlsDelay?: number;
+  hideControls?: boolean;
   neverHideControlsUnlessFullscreen?: boolean;
   disableDoubleClickFullscreen?: boolean;
   enableDoubleClickSkip?: boolean;
@@ -649,18 +650,21 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
           onMouseMove={this.handleMouseMove}
           onKeyDown={this.handleKeyDown}
         >
-          {this.videoRef &&
+          {!this.props.hideControls &&
+            this.videoRef &&
             (this.props.disableInitialOverlay || this.state.hasStarted) &&
             (!this.state.playing ||
               ((this.props.neverHideControlsUnlessFullscreen &&
                 !this.state.isFullscreen) ||
                 this.state.controlsVisible)) &&
             this.props.render(this.state, this)}
+
           {!this.props.disableInitialOverlay &&
             this.videoRef &&
             !this.state.hasStarted && (
               <InitialPlayButton icon={this.props.initialOverlayIcon} />
             )}
+
           {this.videoRef && (
             <PlayOverlay
               loadingIcon={this.props.loadingIcon}
