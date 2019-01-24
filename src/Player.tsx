@@ -478,7 +478,7 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
 
   // Fired whenever the media begins waiting
   handleWaiting = createHandler(this.props.onWaiting, e =>
-    this.updatePlayer(e, { waiting: false })
+    this.updatePlayer(e, { waiting: true })
   );
 
   // Fired whenever the player
