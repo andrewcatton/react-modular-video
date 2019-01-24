@@ -65,6 +65,7 @@ export interface PlayerProps {
   enableDoubleClickSkip?: boolean;
   disableInitialOverlay?: boolean;
   disableKeyboardControls?: boolean;
+  disableOverlay?: boolean;
 
   initialOverlayIcon?: JSX.Element;
   loadingIcon?: JSX.Element;
@@ -665,7 +666,7 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
               <InitialPlayButton icon={this.props.initialOverlayIcon} />
             )}
 
-          {this.videoRef && (
+          {!this.props.disableOverlay && this.videoRef && (
             <PlayOverlay
               loadingIcon={this.props.loadingIcon}
               pauseIcon={this.props.pauseIcon}
