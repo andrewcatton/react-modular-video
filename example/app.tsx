@@ -30,7 +30,7 @@ import {
   HelpBlock,
   Form
 } from "react-bootstrap";
-import { SliderHandle, SliderFill } from "src/components/slider/Slider";
+import { SliderHandle, SliderFill } from "src/components/slider";
 
 const video = require("./sample.mp4");
 
@@ -60,10 +60,11 @@ export interface AppState {
   showCustomOne: boolean;
   showCustomTwo: boolean;
   showCustomSliders: boolean;
-  showCustomFill: boolean;
   disableAnimate: boolean;
   leftSlider: number;
   rightSlider: number;
+  disableTooltip: boolean;
+  disableBuffer: boolean;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -94,8 +95,9 @@ export default class App extends React.Component<AppProps, AppState> {
       showCustomOne: false,
       showCustomTwo: false,
       showCustomSliders: false,
-      showCustomFill: false,
       disableAnimate: false,
+      disableTooltip: false,
+      disableBuffer: false,
       leftSlider: 50,
       rightSlider: 400
     };
@@ -112,9 +114,10 @@ export default class App extends React.Component<AppProps, AppState> {
       console.log("e :", e);
     }
     let handles: SliderHandle[] = [];
+    let fills: SliderFill[] = [];
+
     if (this.state.showCustomSliders) {
       handles.push({
-        style: "bar",
         position: this.state.leftSlider,
         onDrag: (pos: number) => {
           if (pos < this.state.rightSlider) {
@@ -125,7 +128,6 @@ export default class App extends React.Component<AppProps, AppState> {
         }
       });
       handles.push({
-        style: "bar",
         position: this.state.rightSlider,
         onDrag: (pos: number) => {
           if (pos > this.state.leftSlider) {
@@ -135,9 +137,6 @@ export default class App extends React.Component<AppProps, AppState> {
           }
         }
       });
-    }
-    let fills: SliderFill[] = [];
-    if (this.state.showCustomFill) {
       fills.push({
         color: "yellow",
         position: this.state.leftSlider,
@@ -145,6 +144,7 @@ export default class App extends React.Component<AppProps, AppState> {
         order: 1
       });
     }
+
     return (
       <Grid fluid style={{ height: "100vh" }}>
         <Row style={{ height: "100%" }}>
@@ -165,32 +165,28 @@ export default class App extends React.Component<AppProps, AppState> {
               }
               disableInitialOverlay={this.state.disableInitialOverlay}
               disableKeyboardControls={this.state.disableKeyboardControls}
-              render={(props: PlayerState, player: Player) => (
+              render={(playerState: PlayerState, player: Player) => (
                 <ControlBar>
                   <ControlRow align="flex-start">
                     {this.state.showPlayPause && (
-                      <PlayPause
-                        isPlaying={props.playing}
-                        togglePlay={player.togglePlay}
-                      />
+                      <PlayPause player={player} playerState={playerState} />
                     )}
                     {this.state.showProgressBar && (
                       <ProgressBar
-                        seeking={props.seeking}
-                        duration={props.duration}
-                        currentTime={props.currentTime}
-                        buffered={props.buffered}
-                        setCurrentTime={player.seek}
+                        player={player}
+                        playerState={playerState}
                         scrub={this.state.scrub}
                         disableAnimate={this.state.disableAnimate}
-                        handles={handles}
-                        fills={fills}
+                        disableMouseTooltip={this.state.disableTooltip}
+                        disableBufferBar={this.state.disableBuffer}
+                        extraHandles={handles}
+                        extraFills={fills}
                       />
                     )}
                     {this.state.showPlaybackRate && (
                       <PlaybackRate
-                        setRate={(rate: number) => (player.playbackRate = rate)}
-                        rate={props.playbackRate}
+                        player={player}
+                        playerState={playerState}
                         rates={rates}
                       />
                     )}
@@ -198,35 +194,39 @@ export default class App extends React.Component<AppProps, AppState> {
                       <>
                         <TimeSkip
                           amount={this.state.skipAmount}
-                          skip={player.skip}
+                          player={player}
+                          playerState={playerState}
                         />
                         <TimeSkip
                           reverse
                           amount={this.state.skipAmount}
-                          skip={player.skip}
+                          player={player}
+                          playerState={playerState}
                         />
                       </>
                     )}
                     {this.state.showFrameSkip && (
                       <>
-                        <FrameSkip frameRate={15} reverse skip={player.skip} />
-                        <FrameSkip frameRate={15} skip={player.skip} />
+                        <FrameSkip
+                          reverse
+                          player={player}
+                          playerState={playerState}
+                        />
+                        <FrameSkip player={player} playerState={playerState} />
                       </>
                     )}
                     {this.state.showTime && (
                       <TimeDisplay
-                        duration={props.duration}
-                        currentTime={props.currentTime}
+                        player={player}
+                        playerState={playerState}
                         displayType={TimeDisplayType.ELAPSED}
                         secondaryDisplayType={TimeDisplayType.TOTAL}
                       />
                     )}
                     {this.state.showVolume && (
                       <VolumeControl
-                        muted={props.muted}
-                        volumeLevel={player.volume}
-                        setVolume={(volume: number) => (player.volume = volume)}
-                        mute={() => (player.muted = !player.muted)}
+                        player={player}
+                        playerState={playerState}
                         alwaysShowVolumeSlider={this.state.alwaysShowSlider}
                         hideMuteButton={this.state.hideMute}
                         hideVolumeSlider={this.state.hideVolume}
@@ -234,8 +234,8 @@ export default class App extends React.Component<AppProps, AppState> {
                     )}
                     {this.state.showFullscreen && (
                       <FullScreenToggle
-                        isFullscreen={props.isFullscreen}
-                        toggleFullscreen={player.toggleFullscreen}
+                        player={player}
+                        playerState={playerState}
                       />
                     )}
                     {this.state.showCustomTwo && (
@@ -248,15 +248,15 @@ export default class App extends React.Component<AppProps, AppState> {
                     {this.state.showCustomOne && (
                       <Control>
                         <input
-                          value={player.volume * 100}
+                          value={player.state.volume * 100}
                           onChange={e => {
-                            let volumeToSet = player.volume / 100;
+                            let volumeToSet = player.state.volume / 100;
                             try {
                               volumeToSet = parseFloat(e.target.value) / 100;
                             } catch (e) {
                               console.log("e :", e);
                             }
-                            player.volume = volumeToSet;
+                            player.setVolume(volumeToSet);
                           }}
                         />
                       </Control>
@@ -266,7 +266,7 @@ export default class App extends React.Component<AppProps, AppState> {
               )}
             />
 
-            <Well style={{ marginTop: 10 }}>Code display coming soon!</Well>
+            {/* <Well style={{ marginTop: 10 }}>Code display coming soon!</Well> */}
           </Col>
           <Col
             sm={12}
@@ -381,6 +381,22 @@ export default class App extends React.Component<AppProps, AppState> {
               }
             >
               Disable hover animation
+            </Button>
+            <Button
+              active={this.state.disableBuffer}
+              onClick={() =>
+                this.setState({ disableBuffer: !this.state.disableBuffer })
+              }
+            >
+              Disable buffer bar
+            </Button>
+            <Button
+              active={this.state.disableTooltip}
+              onClick={() =>
+                this.setState({ disableTooltip: !this.state.disableTooltip })
+              }
+            >
+              Disable tooltip display
             </Button>
             <h3>Volume Slider Control</h3>
             <Button
@@ -523,19 +539,9 @@ export default class App extends React.Component<AppProps, AppState> {
                 })
               }
             >
-              Toggle Custom Slider Component
+              Toggle Custom Slider/Fill Component
             </Button>
-            <Button
-              active={this.state.showCustomFill}
-              onClick={() =>
-                this.setState({
-                  showCustomFill: !this.state.showCustomFill
-                })
-              }
-            >
-              Toggle Custom Fill Component
-            </Button>
-            {(this.state.showCustomSliders || this.state.showCustomFill) && (
+            {this.state.showCustomSliders && (
               <Form inline>
                 <FormGroup>
                   <ControlLabel>Left Slider</ControlLabel>

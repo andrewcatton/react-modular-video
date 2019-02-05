@@ -21,11 +21,11 @@ export function FrameSkip({
 }: FrameSkipProps & ControlButtonProps) {
   return (
     <Control
-      className={classnames(className, "frame-skip rmv__control")}
+      className={classnames(className, "rmv__frame-skip rmv__control")}
       innerRef={setContainerRef}
     >
       <button
-        className="frame-skip__button rmv__button"
+        className="rmv__frame-skip__button rmv__button"
         ref={setButtonRef}
         onKeyDown={e => e.stopPropagation()}
         onClick={() => skip((reverse ? -1 : 1) * (1 / (framerate || 29.97)))}
@@ -33,9 +33,9 @@ export function FrameSkip({
         {skipIcon ? (
           skipIcon
         ) : reverse ? (
-          <MdSkipPrevious className="frame-skip__icon  rmv__icon" />
+          <MdSkipPrevious className="rmv__frame-skip__icon  rmv__icon" />
         ) : (
-          <MdSkipNext className="frame-skip__icon  rmv__icon" />
+          <MdSkipNext className="rmv__frame-skip__icon  rmv__icon" />
         )}
       </button>
     </Control>

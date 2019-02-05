@@ -50,10 +50,10 @@ export function TimeDisplay({
   return (
     <Control
       innerRef={setContainerRef}
-      className={classnames(className, "time-display rmv__control")}
+      className={classnames(className, "rmv__time-display rmv__control")}
       flex="no-shrink"
     >
-      <Span className="time-display__span rmv__span">
+      <Span className="rmv__time-display__span rmv__span">
         {getTimeDisplay(displayType, roundedCurrentTime, roundedDuration)}
         {secondaryDisplayType && (separator || " / ")}
         {secondaryDisplayType &&

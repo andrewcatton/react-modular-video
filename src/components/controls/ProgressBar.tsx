@@ -105,15 +105,15 @@ export class ProgressBar extends React.Component<
     return (
       <Control
         flex="grow"
-        className={classnames(className, "progress-bar rmv__control")}
+        className={classnames(className, "rmv__progress-bar rmv__control")}
       >
         <Slider
-          classNamePrefix="progress-bar"
+          classNamePrefix="rmv__progress-bar"
           backgroundFillColor={backgroundFillColor}
           handleFillColor={handleFillColor}
           handleBorderColor={handleBorderColor}
           disableMainSlider={disableMainSlider}
-          animate={!disableAnimate}
+          disableAnimate={disableAnimate}
           onDrag={this.onDrag}
           onDragEnd={this.onDragEnd}
           maxVal={duration}

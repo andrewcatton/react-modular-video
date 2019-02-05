@@ -11,18 +11,20 @@ import styled from "styled-components";
 import { IconType, Player, PlayerState } from "../Player";
 
 export interface PlayOverlayProps {
-  player: Player;
   playerState: PlayerState;
 
   amount?: number;
   disableDoubleClickFullscreen?: boolean;
   enableDoubleClickSkip?: boolean;
-  loading: boolean;
 
   showIcon: boolean;
   icon?: IconType;
   setIcon: (showIcon: boolean, icon?: IconType) => void;
   setFadeIconTimer: () => void;
+
+  togglePlay: () => void;
+  skip: (time: number) => void;
+  toggleFullscreen: () => void;
 
   hideCursor: boolean;
   loadingIcon?: JSX.Element;
@@ -99,16 +101,12 @@ const OverlayLoadingIcon = styled.div`
 const Edge = styled.div`
   height: 100%;
   flex: 1;
-  /* background: red;
-  opacity: 0.2; */
   background: transparent;
 `;
 
 const Center = styled.div`
   height: 100%;
   flex: 2;
-  /* /* background: blue; */
-  /* opacity: 0.2; */
   background: transparent;
   display: flex;
   justify-content: center;
@@ -148,7 +146,7 @@ export default class PlayOverlay extends React.Component<
     const {
       setIcon,
       setFadeIconTimer,
-      player: { play },
+      togglePlay,
       playerState: { playing }
     } = this.props;
 
@@ -159,17 +157,12 @@ export default class PlayOverlay extends React.Component<
         setIcon(true, playing ? IconType.PAUSE : IconType.PLAY);
         setFadeIconTimer();
       }
-      play();
+      togglePlay();
     }
   };
 
   skip = (reverse?: boolean) => {
-    const {
-      setIcon,
-      setFadeIconTimer,
-      amount,
-      player: { skip }
-    } = this.props;
+    const { setIcon, setFadeIconTimer, amount, skip } = this.props;
     setIcon(true, reverse ? IconType.REWIND : IconType.FORWARD);
     this.setState({
       skipping: true
@@ -229,13 +222,13 @@ export default class PlayOverlay extends React.Component<
     const {
       amount,
       hideCursor,
-      loading,
       showIcon,
       loadingIcon,
       disableDoubleClickFullscreen,
       enableDoubleClickSkip,
-      playerState: { playing },
-      player: { skip, toggleFullscreen },
+      playerState: { playing, waiting },
+      skip,
+      toggleFullscreen,
       setOverlayCenterRef,
       setOverlayLeftRef,
       setOverlayRef,
@@ -276,7 +269,7 @@ export default class PlayOverlay extends React.Component<
               >
                 {this.getIcon()}
               </OverlayIcon>
-            ) : loading && playing ? (
+            ) : waiting && playing ? (
               <OverlayLoadingIcon className="rmv__overlay__icon rmv__icon">
                 {loadingIcon ? (
                   <Spin className="rmv__overlay__loader">{loadingIcon}</Spin>

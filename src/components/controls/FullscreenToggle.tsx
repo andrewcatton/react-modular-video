@@ -22,24 +22,24 @@ export function FullScreenToggle({
   return (
     <Control
       innerRef={setContainerRef}
-      className={classnames(className, "fullscreen-toggle rmv__control")}
+      className={classnames(className, "rmv__fullscreen-toggle rmv__control")}
     >
       <button
         ref={setButtonRef}
         onKeyDown={e => e.stopPropagation()}
         onClick={toggleFullscreen}
-        className="fullscreen-toggle__button rmv__button"
+        className="rmv__fullscreen-toggle__button rmv__button"
       >
         {isFullscreen ? (
           exitIcon ? (
             exitIcon
           ) : (
-            <MdFullscreenExit className="fullscreen-toggle__icon rmv__icon" />
+            <MdFullscreenExit className="rmv__fullscreen-toggle__icon rmv__icon" />
           )
         ) : fullscreenIcon ? (
           fullscreenIcon
         ) : (
-          <MdFullscreen className="fullscreen-toggle__icon rmv__icon" />
+          <MdFullscreen className="rmv__fullscreen-toggle__icon rmv__icon" />
         )}
       </button>
     </Control>

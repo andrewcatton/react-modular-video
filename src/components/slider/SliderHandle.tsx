@@ -9,7 +9,7 @@ export const RangeHandle = styled.div.attrs<{
   })
 })`
   position: absolute;
-  z-index: 999;
+  z-index: 4;
   border-radius: 100%;
   // transition: margin-left 0.1s ease;
   opacity: ${({ expand }) => (expand ? 1 : 0)};
@@ -55,7 +55,7 @@ export const HoverHandle = styled.div.attrs<{
   })
 })`
   position: absolute;
-  z-index: 999;
+  z-index: 4;
   border-radius: 100%;
   // transition: margin-left 0.1s ease;
   opacity: ${props => (props.expand ? 1 : 0)};

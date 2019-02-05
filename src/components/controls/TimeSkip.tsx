@@ -20,21 +20,21 @@ export interface TimeSkipProps {
 function getReplayIcon(amount: number) {
   switch (amount) {
     case 5:
-      return <MdReplay5 className="time-skip__icon rmv__icon" />;
+      return <MdReplay5 className="rmv__time-skip__icon rmv__icon" />;
     case 10:
-      return <MdReplay10 className="time-skip__icon rmv__icon" />;
+      return <MdReplay10 className="rmv__time-skip__icon rmv__icon" />;
     case 30:
-      return <MdReplay30 className="time-skip__icon rmv__icon" />;
+      return <MdReplay30 className="rmv__time-skip__icon rmv__icon" />;
   }
 }
 function getForwardIcon(amount: number) {
   switch (amount) {
     case 5:
-      return <MdForward5 className="time-skip__icon rmv__icon" />;
+      return <MdForward5 className="rmv__time-skip__icon rmv__icon" />;
     case 10:
-      return <MdForward10 className="time-skip__icon rmv__icon" />;
+      return <MdForward10 className="rmv__time-skip__icon rmv__icon" />;
     case 30:
-      return <MdForward30 className="time-skip__icon rmv__icon" />;
+      return <MdForward30 className="rmv__time-skip__icon rmv__icon" />;
   }
 }
 export function TimeSkip({
@@ -48,11 +48,11 @@ export function TimeSkip({
 }: TimeSkipProps & ControlButtonProps) {
   return (
     <Control
-      className={classnames(className, "time-skip rmv__control")}
+      className={classnames(className, "rmv__time-skip rmv__control")}
       innerRef={setContainerRef}
     >
       <button
-        className="time-skip__button rmv__button"
+        className="rmv__time-skip__button rmv__button"
         ref={setButtonRef}
         onKeyDown={e => e.stopPropagation()}
         onClick={() => skip((reverse ? -1 : 1) * amount)}

@@ -75,7 +75,7 @@ export class VolumeControl extends React.Component<
       return volumeOffIcon ? (
         volumeOffIcon
       ) : (
-        <MdVolumeOff volume-control="volume-control__icon rmv__icon" />
+        <MdVolumeOff volume-control="rmv__volume-control__icon rmv__icon" />
       );
     } else {
       if (showVolumeVariations) {
@@ -83,32 +83,33 @@ export class VolumeControl extends React.Component<
           return volumeUpIcon ? (
             volumeUpIcon
           ) : (
-            <MdVolumeUp volume-control="volume-control__icon rmv__icon" />
+            <MdVolumeUp volume-control="rmv__volume-control__icon rmv__icon" />
           );
         } else if (volume > 0.4) {
           return volumeDownIcon ? (
             volumeDownIcon
           ) : (
-            <MdVolumeDown volume-control="volume-control__icon rmv__icon" />
+            <MdVolumeDown volume-control="rmv__volume-control__icon rmv__icon" />
           );
         } else {
           return volumeMuteIcon ? (
             volumeMuteIcon
           ) : (
-            <MdVolumeMute volume-control="volume-control__icon rmv__icon" />
+            <MdVolumeMute volume-control="rmv__volume-control__icon rmv__icon" />
           );
         }
       } else {
         return volumeUpIcon ? (
           volumeUpIcon
         ) : (
-          <MdVolumeUp volume-control="volume-control__icon rmv__icon" />
+          <MdVolumeUp volume-control="rmv__volume-control__icon rmv__icon" />
         );
       }
     }
   }
 
   onDrag = (position: number) => {
+    console.log("position :", position);
     !this.state.grab && this.setState({ grab: true });
     this.props.player.setVolume(this.getVolumeFromPosition(position));
   };
@@ -174,14 +175,14 @@ export class VolumeControl extends React.Component<
     return (
       <VolumeControlRow
         innerRef={setContainerRef}
-        className={classnames(className, "volume-control rmv__control")}
+        className={classnames(className, "rmv__volume-control rmv__control")}
         flex="no-shrink"
         onMouseOver={this.openMenu}
         onMouseLeave={this.closeMenu}
       >
         {!hideMuteButton && (
           <button
-            className="volume-control__button rmv__button"
+            className="rmv__volume-control__button rmv__button"
             ref={setButtonRef}
             onKeyDown={e => e.stopPropagation()}
             onClick={toggleMute}
@@ -192,12 +193,13 @@ export class VolumeControl extends React.Component<
 
         {!hideVolumeSlider && (
           <AnimateMenu
-            className="volume-control__slider-outer rmv__slider-outer"
+            className="rmv__volume-control__slider-outer rmv__slider-outer"
             open={this.state.grab || menuOpen}
           >
             {!menuHidden && (
               <Slider
-                classNamePrefix="volume-control__slider"
+                disableAnimate={true}
+                classNamePrefix="rmv__volume-control__slider"
                 onDrag={this.onDrag}
                 onDragEnd={this.onDragEnd}
                 maxVal={1}

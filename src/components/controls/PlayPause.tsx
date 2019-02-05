@@ -20,11 +20,11 @@ export function PlayPause({
 }: PlayPauseProps & ControlButtonProps) {
   return (
     <Control
-      className={classnames(className, "play-pause rmv__control")}
+      className={classnames(className, "rmv__play-pause rmv__control")}
       innerRef={setContainerRef}
     >
       <button
-        className="play-pause__button rmv__button"
+        className="rmv__play-pause__button rmv__button"
         ref={setButtonRef}
         onKeyDown={e => e.stopPropagation()}
         onClick={togglePlay}
@@ -33,12 +33,12 @@ export function PlayPause({
           pauseIcon ? (
             pauseIcon
           ) : (
-            <MdPause className="play-pause__icon rmv__icon" />
+            <MdPause className="rmv__play-pause__icon rmv__icon" />
           )
         ) : playIcon ? (
           playIcon
         ) : (
-          <MdPlayArrow className="play-pause__icon rmv__icon" />
+          <MdPlayArrow className="rmv__play-pause__icon rmv__icon" />
         )}
       </button>
     </Control>

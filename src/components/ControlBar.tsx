@@ -7,7 +7,7 @@ const Controls = styled.div`
   position: absolute;
   bottom: 0;
   width: 100%;
-  z-index: 999;
+  z-index: 3;
   background: rgba(0, 0, 0, 0.5);
   padding-top: 5px;
   padding-bottom: 5px;
@@ -74,7 +74,7 @@ export const ControlCol = styled.div<{ flex?: "grow" | "no-shrink" }>`
 
 export interface ControlBarProps {
   children: any;
-  setControlBarRef: (el: HTMLDivElement) => void;
+  setControlBarRef?: (el: HTMLDivElement) => void;
 }
 
 export const ControlBar = (props: ControlBarProps) => {

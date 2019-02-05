@@ -22,7 +22,7 @@ export interface SliderProps {
   fills?: SliderFill[];
   sliders?: SliderHandle[];
   seeking?: boolean;
-  animate?: boolean;
+  disableAnimate?: boolean;
   width?: string;
   toolTipDisplay?: (position: number) => string;
   sliderFunc?: (pos: number) => number;
@@ -186,6 +186,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
   handleDrag = (e: ProgressDragEvent) => {
     e.preventDefault();
     let grabPos = this.getGrabPosition(e);
+    console.log("grabPos :", grabPos);
     this.setState({ grabPos });
     if (this.props.onDrag) {
       this.props.onDrag(grabPos);
@@ -287,7 +288,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
     const {
       classNamePrefix,
       sliders,
-      animate,
+      disableAnimate,
       width,
       handleBorderColor,
       handleFillColor,
@@ -313,7 +314,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
           }
         });
     }
-    const isExpanded = !animate || expand || grabbed;
+    const isExpanded = disableAnimate || expand || grabbed;
     return (
       <RangeSlider
         className={classnames("rmv__slider", className)}
@@ -331,7 +332,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
           className={classnames("rmv__slider__rail", className + "__rail")}
           innerRef={this.setSliderRailRef}
         >
-          {!grab && isExpanded && (
+          {!grab && (expand || grabbed) && toolTipDisplay && (
             <HoverHandle
               className={classnames(
                 "rmv__slider__hover",

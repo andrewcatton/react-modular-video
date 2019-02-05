@@ -21,8 +21,8 @@ export interface PlayerProps {
   framerate?: number;
 
   fluid?: boolean;
-  width?: number;
-  height?: number;
+  width?: string | number;
+  height?: string | number;
   aspectRatio?: string;
 
   playbackRate?: number;
@@ -142,18 +142,6 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
   controlsHideTimer?: NodeJS.Timer;
   fadeIconTimer?: NodeJS.Timer | null;
 
-  getStyleString(value) {
-    if (typeof value === "string") {
-      if (value === "auto") {
-        return "auto";
-      } else if (value.match(/\d+%/)) {
-        return value;
-      }
-    } else if (typeof value === "number") {
-      return `${value}px`;
-    }
-  }
-
   getStyle() {
     const { fluid, width, height, aspectRatio } = this.props;
 
@@ -177,11 +165,25 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     ratioMultiplier = 1 / ratioMultiplier;
 
     let videoWidth: number;
-    if (width !== undefined) {
-      // Use any width that's been specifically set
+    if (
+      width !== undefined &&
+      typeof width === "string" &&
+      !width.includes("%")
+    ) {
+      // Use any width that's been specifically set using "px"
+      videoWidth = parseFloat(width.replace("px", ""));
+    } else if (width !== undefined && typeof width !== "string") {
+      // Use any width that's been specifically set as a number
       videoWidth = width;
-    } else if (height !== undefined) {
-      // Or calulate the width from the aspect ratio if a height has been set
+    } else if (
+      height !== undefined &&
+      typeof height === "string" &&
+      !height.includes("%")
+    ) {
+      // Or calulate the width from the aspect ratio if a height has been set using "px"
+      videoWidth = parseFloat(height.replace("px", "")) / ratioMultiplier;
+    } else if (height !== undefined && typeof height !== "string") {
+      // Or calulate the width from the aspect ratio if a height has been set as a number
       videoWidth = height / ratioMultiplier;
     } else {
       // Or use the video's metadata, or use a default of 400px
@@ -189,8 +191,15 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }
 
     let videoHeight: number;
-    if (height !== undefined) {
-      // Use any height that's been specifically set
+    if (
+      height !== undefined &&
+      typeof height === "string" &&
+      !height.includes("%")
+    ) {
+      // Use any height that's been specifically set using "px"
+      videoHeight = parseFloat(height.replace("px", ""));
+    } else if (height !== undefined && typeof height !== "string") {
+      // Or calulate the width from the aspect ratio if a height has been set as a number
       videoHeight = height;
     } else {
       // Otherwise calculate the height from the ratio and the width
@@ -203,8 +212,14 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
       };
     } else {
       return {
-        width: this.getStyleString(videoWidth),
-        height: this.getStyleString(videoHeight)
+        width:
+          typeof width === "string" && width.includes("%")
+            ? width
+            : `${videoWidth}px`,
+        height:
+          typeof height === "string" && height.includes("%")
+            ? height
+            : `${videoHeight}px`
       };
     }
   }
@@ -297,23 +312,23 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }, hideTime);
   };
 
-  setPlaybackRate(rate) {
+  setPlaybackRate = (rate: number) => {
     this.videoRef.playbackRate = rate;
-  }
+  };
 
-  mute() {
+  mute = () => {
     this.videoRef.muted = true;
-  }
+  };
 
-  unmute() {
+  unmute = () => {
     this.videoRef.muted = false;
-  }
+  };
 
-  toggleMute() {
+  toggleMute = () => {
     this.videoRef.muted = !this.videoRef.muted;
-  }
+  };
 
-  setVolume(val) {
+  setVolume = (val: number) => {
     if (val > 1) {
       val = 1;
     }
@@ -321,38 +336,40 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
       val = 0;
     }
     this.videoRef.volume = val;
-  }
+  };
 
-  getVideoWidth() {
+  getVideoWidth = () => {
     return this.videoRef.videoWidth;
-  }
+  };
 
-  getVideoHeight() {
+  getVideoHeight = () => {
     return this.videoRef.videoHeight;
-  }
+  };
 
-  play() {
+  play = () => {
     const promise = this.videoRef.play();
     if (promise !== undefined) {
       promise.catch(error => {}).then(() => {});
     }
-  }
+  };
 
-  pause() {
+  pause = () => {
     this.videoRef.pause();
-  }
+  };
 
-  load() {
+  load = () => {
     this.videoRef.load();
-  }
+  };
 
-  addTextTrack(kind: TextTrackKind, label?: string, language?: string) {
-    this.videoRef.addTextTrack(kind, label, language);
-  }
+  // TODO: Implement
+  // addTextTrack = (kind: TextTrackKind, label?: string, language?: string) => {
+  //   this.videoRef.addTextTrack(kind, label, language);
+  // }
 
-  canPlayType(type: string) {
-    this.videoRef.canPlayType(type);
-  }
+  // TODO: Implement
+  // canPlayType = (type: string) => {
+  //   this.videoRef.canPlayType(type);
+  // }
 
   togglePlay = () => {
     if (this.videoRef.paused) {
@@ -362,7 +379,6 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }
   };
 
-  // seek video by time
   seek = (time: number) => {
     try {
       this.videoRef.currentTime = time;
@@ -371,12 +387,10 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }
   };
 
-  // jump x seconds
   skip = (seconds: number) => {
     this.seek(this.videoRef.currentTime + seconds);
   };
 
-  // enter or exist full screen
   toggleFullscreen = () => {
     if (fullscreen.enabled) {
       if (fullscreen.isFullscreen) {
@@ -402,29 +416,20 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     );
   };
 
-  // Fired when the user agent
-  // begins looking for media data
   handleLoadStart = createHandler(this.props.onLoadStart, this.updatePlayer);
 
-  // A handler for events that
-  // signal that waiting has ended
   handleCanPlay = createHandler(this.props.onCanPlay, e =>
     this.updatePlayer(e, { waiting: false })
   );
 
-  // A handler for events that
-  // signal that waiting has ended
   handleCanPlayThrough = createHandler(this.props.onCanPlayThrough, e =>
     this.updatePlayer(e, { waiting: false })
   );
 
-  // A handler for events that
-  // signal that waiting has ended
   handlePlaying = createHandler(this.props.onPlaying, e =>
     this.updatePlayer(e, { waiting: false })
   );
 
-  // Fired whenever the media has been started
   handlePlay = createHandler(this.props.onPlay, e =>
     this.updatePlayer(e, {
       ended: false,
@@ -434,24 +439,17 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     })
   );
 
-  // Fired whenever the media has been paused
   handlePause = createHandler(this.props.onPause, e =>
     this.updatePlayer(e, { playing: false })
   );
 
-  // Fired when the duration of
-  // the media resource is first known or changed
   handleDurationChange = createHandler(
     this.props.onDurationChange,
     this.updatePlayer
   );
 
-  // Fired while the user agent
-  // is downloading media data
   handleProgress = createHandler(this.props.onProgress, this.updatePlayer);
 
-  // Fired when the end of the media resource
-  // is reached (currentTime == duration)
   handleEnded = createHandler(this.props.onEnded, e => {
     const { loop } = this.props;
     if (loop) {
@@ -462,39 +460,26 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }
   });
 
-  // Fired whenever the media begins waiting
   handleWaiting = createHandler(this.props.onWaiting, e =>
     this.updatePlayer(e, { waiting: true })
   );
 
-  // Fired whenever the player
-  // is jumping to a new time
   handleSeeking = createHandler(this.props.onSeeking, event =>
     this.setState({ seeking: true })
   );
 
-  // Fired when the player has
-  // finished jumping to a new time
   handleSeeked = createHandler(this.props.onSeeked, event =>
     this.setState({ seeking: false })
   );
 
-  // Fires when the browser is
-  // intentionally not getting media data
   handleSuspend = createHandler(this.props.onSuspend, this.updatePlayer);
 
-  // Fires when the loading of an audio/video is aborted
   handleAbort = createHandler(this.props.onAbort, this.updatePlayer);
 
-  // Fires when the current playlist is empty
   handleEmptied = createHandler(this.props.onEmptied, this.updatePlayer);
 
-  // Fires when the browser is trying to
-  // get media data, but data is not available
   handleStalled = createHandler(this.props.onStalled, this.updatePlayer);
 
-  // Fires when the browser has loaded
-  // meta data for the audio/video
   handleLoadedMetaData = createHandler(this.props.onLoadedMetadata, event => {
     const { startTime } = this.props;
     if (startTime && startTime > 0) {
@@ -503,27 +488,17 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     this.updatePlayer(event);
   });
 
-  // Fires when the browser has loaded
-  // the current frame of the audio/video
   handleLoadedData = createHandler(this.props.onLoadedData, this.updatePlayer);
 
-  // Fires when the current
-  // playback position has changed
   handleTimeUpdate = createHandler(this.props.onTimeUpdate, this.updatePlayer);
 
-  /**
-   * Fires when the playing speed of the audio/video is changed
-   */
   handleRateChange = createHandler(this.props.onRateChange, this.updatePlayer);
 
-  // Fires when the volume has been changed
   handleVolumeChange = createHandler(
     this.props.onVolumeChange,
     this.updatePlayer
   );
 
-  // Fires when an error occurred
-  // during the loading of an audio/video
   handleError = createHandler(this.props.onError, this.updatePlayer);
 
   handleResize = () => this.props.onResize && this.props.onResize();
@@ -628,93 +603,92 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     const hideCursor = !this.state.controlsVisible && this.state.isFullscreen;
 
     return (
-      <div ref={this.setRootElementRef}>
-        <VideoDiv
-          fluid={fluid}
-          fullscreen={this.state.isFullscreen}
-          style={this.getStyle()}
-          onTouchStart={this.handleMouseDown}
-          onMouseDown={this.handleMouseDown}
-          onMouseMove={this.handleMouseMove}
-          onKeyDown={this.handleKeyDown}
-        >
-          {!this.props.hideControls &&
-            this.videoRef &&
-            (this.props.disableInitialOverlay || this.state.hasStarted) &&
-            (!this.state.playing ||
-              ((this.props.neverHideControlsUnlessFullscreen &&
-                !this.state.isFullscreen) ||
-                this.state.controlsVisible)) &&
-            this.props.render(this.state, this)}
+      <VideoDiv
+        innerRef={this.setRootElementRef}
+        className="rmv"
+        fluid={fluid}
+        fullscreen={this.state.isFullscreen}
+        style={this.getStyle()}
+        onTouchStart={this.handleMouseDown}
+        onMouseDown={this.handleMouseDown}
+        onMouseMove={this.handleMouseMove}
+        onKeyDown={this.handleKeyDown}
+      >
+        {!this.props.hideControls &&
+          this.videoRef &&
+          (this.props.disableInitialOverlay || this.state.hasStarted) &&
+          (!this.state.playing ||
+            ((this.props.neverHideControlsUnlessFullscreen &&
+              !this.state.isFullscreen) ||
+              this.state.controlsVisible)) &&
+          this.props.render(this.state, this)}
 
-          {!this.props.disableInitialOverlay &&
-            this.videoRef &&
-            !this.state.hasStarted && (
-              <InitialPlayButton icon={this.props.initialOverlayIcon} />
-            )}
-
-          {!this.props.disableOverlay && this.videoRef && (
-            <PlayOverlay
-              loadingIcon={this.props.loadingIcon}
-              pauseIcon={this.props.pauseIcon}
-              playIcon={this.props.playIcon}
-              forwardIcon={this.props.forwardIcon}
-              rewindIcon={this.props.rewindIcon}
-              volumeDownIcon={this.props.volumeDownIcon}
-              volumeUpIcon={this.props.volumeUpIcon}
-              hideCursor={hideCursor}
-              loading={this.state.waiting}
-              playing={this.state.playing}
-              play={this.togglePlay}
-              skip={this.skip}
-              amount={10}
-              fullscreen={this.toggleFullscreen}
-              disableDoubleClickFullscreen={
-                this.props.disableDoubleClickFullscreen
-              }
-              enableDoubleClickSkip={this.props.enableDoubleClickSkip}
-              icon={this.state.icon}
-              showIcon={this.state.showIcon}
-              setIcon={this.setIcon}
-              setFadeIconTimer={this.setFadeIconTimer}
-            />
+        {!this.props.disableInitialOverlay &&
+          this.videoRef &&
+          !this.state.hasStarted && (
+            <InitialPlayButton icon={this.props.initialOverlayIcon} />
           )}
-          <video
-            id={videoId}
-            crossOrigin={crossOrigin}
-            ref={this.setVideoRef}
-            muted={muted}
-            preload={preload}
-            loop={loop}
-            playsInline={playsInline}
-            autoPlay={autoPlay}
-            poster={poster}
-            src={src}
-            onLoadStart={this.handleLoadStart}
-            onWaiting={this.handleWaiting}
-            onCanPlay={this.handleCanPlay}
-            onCanPlayThrough={this.handleCanPlayThrough}
-            onPlaying={this.handlePlaying}
-            onEnded={this.handleEnded}
-            onSeeking={this.handleSeeking}
-            onSeeked={this.handleSeeked}
-            onPlay={this.handlePlay}
-            onPause={this.handlePause}
-            onProgress={this.handleProgress}
-            onDurationChange={this.handleDurationChange}
-            onError={this.handleError}
-            onSuspend={this.handleSuspend}
-            onAbort={this.handleAbort}
-            onEmptied={this.handleEmptied}
-            onStalled={this.handleStalled}
-            onLoadedMetadata={this.handleLoadedMetaData}
-            onLoadedData={this.handleLoadedData}
-            onTimeUpdate={this.handleTimeUpdate}
-            onRateChange={this.handleRateChange}
-            onVolumeChange={this.handleVolumeChange}
+
+        {!this.props.disableOverlay && this.videoRef && (
+          <PlayOverlay
+            togglePlay={this.togglePlay}
+            skip={this.skip}
+            toggleFullscreen={this.toggleFullscreen}
+            playerState={this.state}
+            pauseIcon={this.props.pauseIcon}
+            playIcon={this.props.playIcon}
+            forwardIcon={this.props.forwardIcon}
+            rewindIcon={this.props.rewindIcon}
+            volumeDownIcon={this.props.volumeDownIcon}
+            volumeUpIcon={this.props.volumeUpIcon}
+            hideCursor={hideCursor}
+            amount={10}
+            disableDoubleClickFullscreen={
+              this.props.disableDoubleClickFullscreen
+            }
+            enableDoubleClickSkip={this.props.enableDoubleClickSkip}
+            icon={this.state.icon}
+            showIcon={this.state.showIcon}
+            setIcon={this.setIcon}
+            setFadeIconTimer={this.setFadeIconTimer}
           />
-        </VideoDiv>
-      </div>
+        )}
+        <video
+          className="rmv__video"
+          id={videoId}
+          crossOrigin={crossOrigin}
+          ref={this.setVideoRef}
+          muted={muted}
+          preload={preload}
+          loop={loop}
+          playsInline={playsInline}
+          autoPlay={autoPlay}
+          poster={poster}
+          src={src}
+          onLoadStart={this.handleLoadStart}
+          onWaiting={this.handleWaiting}
+          onCanPlay={this.handleCanPlay}
+          onCanPlayThrough={this.handleCanPlayThrough}
+          onPlaying={this.handlePlaying}
+          onEnded={this.handleEnded}
+          onSeeking={this.handleSeeking}
+          onSeeked={this.handleSeeked}
+          onPlay={this.handlePlay}
+          onPause={this.handlePause}
+          onProgress={this.handleProgress}
+          onDurationChange={this.handleDurationChange}
+          onError={this.handleError}
+          onSuspend={this.handleSuspend}
+          onAbort={this.handleAbort}
+          onEmptied={this.handleEmptied}
+          onStalled={this.handleStalled}
+          onLoadedMetadata={this.handleLoadedMetaData}
+          onLoadedData={this.handleLoadedData}
+          onTimeUpdate={this.handleTimeUpdate}
+          onRateChange={this.handleRateChange}
+          onVolumeChange={this.handleVolumeChange}
+        />
+      </VideoDiv>
     );
   }
 }

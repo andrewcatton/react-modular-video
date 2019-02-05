@@ -18,13 +18,13 @@ const RATES = [0.5, 1, 1.5, 2];
 
 const RateMenu = styled.div<{ opaque?: boolean }>`
   position: absolute;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 5px);
   width: 100%;
   background: ${({ opaque }) => (opaque ? "black" : "rgba(0, 0, 0, 0.5)")};
   button {
     width: 100%;
   }
-  z-index: 998;
+  z-index: 3;
   button:hover,
   button:focus {
     background: ${({ opaque }) =>
@@ -92,12 +92,12 @@ export class PlaybackRate extends React.Component<
     const displayRates = rates && rates.length > 0 ? rates : RATES;
     return (
       <RateControl
-        className={classnames(className, "playback-rate rmv__control")}
+        className={classnames(className, "rmv__playback-rate rmv__control")}
         innerRef={this.setRef}
         flex="no-shrink"
       >
         <RateMenu
-          className="playback-rate__menu rmv__menu"
+          className="rmv__playback-rate__menu rmv__menu"
           innerRef={setMenuRef}
           opaque={opaque}
         >
@@ -106,7 +106,7 @@ export class PlaybackRate extends React.Component<
               if (rate <= 0) return null;
               return (
                 <button
-                  className="playback-rate__menu__button rmv__menu__button"
+                  className="rmv__playback-rate__menu__button rmv__menu__button"
                   onClick={() => setPlaybackRate(rate)}
                   key={index}
                 >
@@ -116,7 +116,7 @@ export class PlaybackRate extends React.Component<
             })}
         </RateMenu>
         <button
-          className="playback-rate__button rmv__button"
+          className="rmv__playback-rate__button rmv__button"
           ref={setButtonRef}
           onKeyDown={e => e.stopPropagation()}
           onClick={() => this.setState({ menuOpen: !this.state.menuOpen })}
