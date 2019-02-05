@@ -6,14 +6,13 @@ import {
   MdVolumeOff
 } from "react-icons/md";
 import { Control } from "../ControlBar";
-import Slider from "../slider/Slider";
 import styled from "styled-components";
+import { ControlButtonProps } from "./Types";
+import classnames from "classnames";
+import { Slider, SliderFill } from "../slider";
+import { throttle } from "src/utils/helpers";
 
 export interface VolumeControlProps {
-  volumeLevel: number;
-  muted: boolean;
-  mute: () => void;
-  setVolume: (volume: number) => void;
   hideMuteButton?: boolean;
   hideVolumeSlider?: boolean;
   alwaysShowVolumeSlider?: boolean;
@@ -41,14 +40,14 @@ const VolumeControlRow = styled(Control)`
 `;
 
 const AnimateMenu = styled.div<{ open: boolean }>`
-  opacity: ${props => (props.open ? 1 : 0)};
-  width: ${props => (props.open ? VOLUME_WIDTH + 5 : 0)}px;
+  opacity: ${({ open }) => (open ? 1 : 0)};
+  width: ${({ open }) => (open ? VOLUME_WIDTH + 5 : 0)}px;
   transition: all 0.5s ease;
-  padding-left: ${props => (props.open ? 5 : 0)}px;
+  padding-left: ${({ open }) => (open ? 5 : 0)}px;
 `;
 
 export class VolumeControl extends React.Component<
-  VolumeControlProps,
+  VolumeControlProps & ControlButtonProps,
   VolumeControlState
 > {
   menuTimer?: NodeJS.Timer | null;
@@ -60,6 +59,7 @@ export class VolumeControl extends React.Component<
       menuHidden: true,
       grab: false
     };
+    this.onDrag = throttle(this.onDrag, 100);
   }
 
   getIcon() {
@@ -67,28 +67,50 @@ export class VolumeControl extends React.Component<
       volumeDownIcon,
       volumeOffIcon,
       volumeMuteIcon,
-      volumeUpIcon
+      volumeUpIcon,
+      showVolumeVariations,
+      playerState: { muted, volume }
     } = this.props;
-    if (this.props.muted) {
-      return volumeOffIcon ? volumeOffIcon : <MdVolumeOff />;
+    if (muted) {
+      return volumeOffIcon ? (
+        volumeOffIcon
+      ) : (
+        <MdVolumeOff volume-control="volume-control__icon rmv__icon" />
+      );
     } else {
-      if (this.props.showVolumeVariations) {
-        if (this.props.volumeLevel > 0.8) {
-          return volumeUpIcon ? volumeUpIcon : <MdVolumeUp />;
-        } else if (this.props.volumeLevel > 0.4) {
-          return volumeDownIcon ? volumeDownIcon : <MdVolumeDown />;
+      if (showVolumeVariations) {
+        if (volume > 0.8) {
+          return volumeUpIcon ? (
+            volumeUpIcon
+          ) : (
+            <MdVolumeUp volume-control="volume-control__icon rmv__icon" />
+          );
+        } else if (volume > 0.4) {
+          return volumeDownIcon ? (
+            volumeDownIcon
+          ) : (
+            <MdVolumeDown volume-control="volume-control__icon rmv__icon" />
+          );
         } else {
-          return volumeMuteIcon ? volumeMuteIcon : <MdVolumeMute />;
+          return volumeMuteIcon ? (
+            volumeMuteIcon
+          ) : (
+            <MdVolumeMute volume-control="volume-control__icon rmv__icon" />
+          );
         }
       } else {
-        return volumeUpIcon ? volumeUpIcon : <MdVolumeUp />;
+        return volumeUpIcon ? (
+          volumeUpIcon
+        ) : (
+          <MdVolumeUp volume-control="volume-control__icon rmv__icon" />
+        );
       }
     }
   }
 
   onDrag = (position: number) => {
     !this.state.grab && this.setState({ grab: true });
-    this.props.setVolume(this.getVolumeFromPosition(position));
+    this.props.player.setVolume(this.getVolumeFromPosition(position));
   };
 
   onDragEnd = () => {
@@ -123,45 +145,63 @@ export class VolumeControl extends React.Component<
     }
   };
 
-  public render() {
-    let fill = {
+  render() {
+    const {
+      className,
+      alwaysShowVolumeSlider,
+      hideMuteButton,
+      hideVolumeSlider,
+      setContainerRef,
+      setButtonRef,
+      player: { toggleMute },
+      playerState: { volume }
+    } = this.props;
+
+    let fill: SliderFill = {
       color: "#0095ff",
-      size: this.props.volumeLevel,
+      size: volume,
       position: 0,
       order: 1
     };
 
     const menuOpen =
       this.state.menuOpen ||
-      this.props.alwaysShowVolumeSlider === true ||
-      this.props.hideMuteButton === true;
+      alwaysShowVolumeSlider === true ||
+      hideMuteButton === true;
     const menuHidden =
-      this.state.menuHidden &&
-      !this.props.alwaysShowVolumeSlider &&
-      !this.props.hideMuteButton;
+      this.state.menuHidden && !alwaysShowVolumeSlider && !hideMuteButton;
+
     return (
       <VolumeControlRow
+        innerRef={setContainerRef}
+        className={classnames(className, "volume-control rmv__control")}
         flex="no-shrink"
         onMouseOver={this.openMenu}
         onMouseLeave={this.closeMenu}
       >
-        {!this.props.hideMuteButton && (
+        {!hideMuteButton && (
           <button
+            className="volume-control__button rmv__button"
+            ref={setButtonRef}
             onKeyDown={e => e.stopPropagation()}
-            onClick={this.props.mute}
+            onClick={toggleMute}
           >
             {this.getIcon()}
           </button>
         )}
 
-        {!this.props.hideVolumeSlider && (
-          <AnimateMenu open={this.state.grab || menuOpen}>
+        {!hideVolumeSlider && (
+          <AnimateMenu
+            className="volume-control__slider-outer rmv__slider-outer"
+            open={this.state.grab || menuOpen}
+          >
             {!menuHidden && (
               <Slider
+                classNamePrefix="volume-control__slider"
                 onDrag={this.onDrag}
                 onDragEnd={this.onDragEnd}
                 maxVal={1}
-                currVal={this.props.volumeLevel}
+                currVal={volume}
                 fills={[fill]}
                 width={VOLUME_WIDTH + "px"}
               />

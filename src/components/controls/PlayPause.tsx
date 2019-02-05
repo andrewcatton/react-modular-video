@@ -1,27 +1,44 @@
 import React from "react";
 import { MdPause, MdPlayArrow } from "react-icons/md";
 import { Control } from "../ControlBar";
+import { ControlButtonProps } from "./Types";
+import classnames from "classnames";
+
 export interface PlayPauseProps {
-  togglePlay: () => void;
-  isPlaying: boolean;
   playIcon?: JSX.Element;
   pauseIcon?: JSX.Element;
 }
 
-export function PlayPause(props: PlayPauseProps) {
+export function PlayPause({
+  playIcon,
+  pauseIcon,
+  setContainerRef,
+  setButtonRef,
+  className,
+  player: { togglePlay },
+  playerState: { playing }
+}: PlayPauseProps & ControlButtonProps) {
   return (
-    <Control>
-      <button onKeyDown={e => e.stopPropagation()} onClick={props.togglePlay}>
-        {props.isPlaying ? (
-          props.pauseIcon ? (
-            props.pauseIcon
+    <Control
+      className={classnames(className, "play-pause rmv__control")}
+      innerRef={setContainerRef}
+    >
+      <button
+        className="play-pause__button rmv__button"
+        ref={setButtonRef}
+        onKeyDown={e => e.stopPropagation()}
+        onClick={togglePlay}
+      >
+        {playing ? (
+          pauseIcon ? (
+            pauseIcon
           ) : (
-            <MdPause />
+            <MdPause className="play-pause__icon rmv__icon" />
           )
-        ) : props.playIcon ? (
-          props.playIcon
+        ) : playIcon ? (
+          playIcon
         ) : (
-          <MdPlayArrow />
+          <MdPlayArrow className="play-pause__icon rmv__icon" />
         )}
       </button>
     </Control>

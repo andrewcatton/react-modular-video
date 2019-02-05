@@ -297,29 +297,23 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }, hideTime);
   };
 
-  get playbackRate() {
-    return this.videoRef && this.videoRef.playbackRate;
-  }
-
-  // set playback rate
-  // speed of video
-  set playbackRate(rate) {
+  setPlaybackRate(rate) {
     this.videoRef.playbackRate = rate;
   }
 
-  get muted() {
-    return this.videoRef.muted;
+  mute() {
+    this.videoRef.muted = true;
   }
 
-  set muted(val) {
-    this.videoRef.muted = val;
+  unmute() {
+    this.videoRef.muted = false;
   }
 
-  get volume() {
-    return this.videoRef.volume;
+  toggleMute() {
+    this.videoRef.muted = !this.videoRef.muted;
   }
 
-  set volume(val) {
+  setVolume(val) {
     if (val > 1) {
       val = 1;
     }
@@ -329,17 +323,14 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     this.videoRef.volume = val;
   }
 
-  // video width
-  get videoWidth() {
+  getVideoWidth() {
     return this.videoRef.videoWidth;
   }
 
-  // video height
-  get videoHeight() {
+  getVideoHeight() {
     return this.videoRef.videoHeight;
   }
 
-  // play the video
   play() {
     const promise = this.videoRef.play();
     if (promise !== undefined) {
@@ -347,27 +338,22 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     }
   }
 
-  // pause the video
   pause() {
     this.videoRef.pause();
   }
 
-  // Change the video source and re-load the video:
   load() {
     this.videoRef.load();
   }
 
-  // Add a new text track to the video
   addTextTrack(kind: TextTrackKind, label?: string, language?: string) {
     this.videoRef.addTextTrack(kind, label, language);
   }
 
-  // Check if your browser can play different types of video:
   canPlayType(type: string) {
     this.videoRef.canPlayType(type);
   }
 
-  // toggle play
   togglePlay = () => {
     if (this.videoRef.paused) {
       this.play();
@@ -405,8 +391,8 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
     this.setState(
       {
         playbackRate: this.videoRef.playbackRate,
-        muted: this.muted,
-        volume: this.volume,
+        muted: this.videoRef.muted,
+        volume: this.videoRef.volume,
         currentTime: this.videoRef.currentTime,
         duration: this.videoRef.duration,
         buffered: this.videoRef.buffered,
@@ -551,6 +537,7 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
   };
 
   handleKeyDown = (e: React.KeyboardEvent) => {
+    const { volume } = this.videoRef;
     if (!this.props.disableKeyboardControls) {
       this.startControlsTimer();
 
@@ -585,7 +572,7 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
           break;
         case 38:
           //ARROW UP
-          this.volume = this.volume + this.volume * 0.1;
+          this.setVolume(volume + volume * 0.1);
           this.setState({
             showIcon: true,
             icon: IconType.VOLUME_UP
@@ -594,7 +581,7 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
           break;
         case 40:
           //ARROW DOWN
-          this.volume = this.volume - this.volume * 0.1;
+          this.setVolume(volume - volume * 0.1);
           this.setState({
             showIcon: true,
             icon: IconType.VOLUME_DOWN

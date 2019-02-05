@@ -20,8 +20,15 @@ interface InitialPlayButtonProps {
 
 export function InitialPlayButton(props: InitialPlayButtonProps) {
   return (
-    <Overlay>
-      {props.icon ? props.icon : <MdPlayCircleFilled size={80} />}
+    <Overlay className="rmv__initial-overlay">
+      {props.icon ? (
+        props.icon
+      ) : (
+        <MdPlayCircleFilled
+          className="rmv__initial-overlay__icon rmv__icon"
+          size={80}
+        />
+      )}
     </Overlay>
   );
 }

@@ -8,14 +8,13 @@ import {
   MdVolumeUp
 } from "react-icons/md";
 import styled from "styled-components";
-import { IconType } from "../Player";
+import { IconType, Player, PlayerState } from "../Player";
 
 export interface PlayOverlayProps {
-  play: () => void;
-  playing: boolean;
-  skip?: (time: number) => void;
+  player: Player;
+  playerState: PlayerState;
+
   amount?: number;
-  fullscreen?: () => void;
   disableDoubleClickFullscreen?: boolean;
   enableDoubleClickSkip?: boolean;
   loading: boolean;
@@ -33,6 +32,11 @@ export interface PlayOverlayProps {
   rewindIcon?: JSX.Element;
   volumeDownIcon?: JSX.Element;
   volumeUpIcon?: JSX.Element;
+
+  setOverlayRef?: (el: HTMLDivElement) => void;
+  setOverlayCenterRef?: (el: HTMLDivElement) => void;
+  setOverlayLeftRef?: (el: HTMLDivElement) => void;
+  setOverlayRightRef?: (el: HTMLDivElement) => void;
 }
 
 export interface PlayOverlayState {
@@ -141,29 +145,39 @@ export default class PlayOverlay extends React.Component<
     }, 500);
 
   playToggle = (edge: boolean, reverse: boolean) => {
+    const {
+      setIcon,
+      setFadeIconTimer,
+      player: { play },
+      playerState: { playing }
+    } = this.props;
+
     if (edge && this.state.skipping) {
       this.skip(reverse);
     } else {
       if (!this.state.firstPlay) {
-        this.props.setIcon(
-          true,
-          this.props.playing ? IconType.PAUSE : IconType.PLAY
-        );
-        this.props.setFadeIconTimer();
+        setIcon(true, playing ? IconType.PAUSE : IconType.PLAY);
+        setFadeIconTimer();
       }
-      this.props.play();
+      play();
     }
   };
 
   skip = (reverse?: boolean) => {
-    this.props.setIcon(true, reverse ? IconType.REWIND : IconType.FORWARD);
+    const {
+      setIcon,
+      setFadeIconTimer,
+      amount,
+      player: { skip }
+    } = this.props;
+    setIcon(true, reverse ? IconType.REWIND : IconType.FORWARD);
     this.setState({
       skipping: true
     });
-    this.props.setFadeIconTimer();
+    setFadeIconTimer();
     this.skipTimer = this.setSkipTimer();
-    if (this.props.skip && this.props.amount) {
-      this.props.skip((reverse ? -1 : 1) * this.props.amount);
+    if (skip && amount) {
+      skip((reverse ? -1 : 1) * amount);
     }
   };
 
@@ -175,13 +189,14 @@ export default class PlayOverlay extends React.Component<
         this.iconRef && this.iconRef.classList.add("animate");
       }, 1);
     }
-    if (this.state.firstPlay && this.props.playing) {
+    if (this.state.firstPlay && this.props.playerState.playing) {
       this.setState({ firstPlay: false });
     }
   }
 
   getIcon = () => {
     const {
+      icon,
       pauseIcon,
       playIcon,
       forwardIcon,
@@ -189,7 +204,8 @@ export default class PlayOverlay extends React.Component<
       volumeDownIcon,
       volumeUpIcon
     } = this.props;
-    switch (this.props.icon) {
+
+    switch (icon) {
       case IconType.PAUSE:
         return pauseIcon ? pauseIcon : <MdPauseCircleFilled size={"100%"} />;
       case IconType.PLAY:
@@ -210,44 +226,75 @@ export default class PlayOverlay extends React.Component<
   };
 
   public render() {
-    const canFullscreen =
-      this.props.fullscreen && !this.props.disableDoubleClickFullscreen;
-    const canSkip =
-      this.props.enableDoubleClickSkip && this.props.skip && this.props.amount;
+    const {
+      amount,
+      hideCursor,
+      loading,
+      showIcon,
+      loadingIcon,
+      disableDoubleClickFullscreen,
+      enableDoubleClickSkip,
+      playerState: { playing },
+      player: { skip, toggleFullscreen },
+      setOverlayCenterRef,
+      setOverlayLeftRef,
+      setOverlayRef,
+      setOverlayRightRef
+    } = this.props;
+
+    const canFullscreen = toggleFullscreen && !disableDoubleClickFullscreen;
+    const canSkip = enableDoubleClickSkip && skip && amount;
     return (
-      <Overlay hideCursor={this.props.hideCursor}>
-        <ClickArea>
+      <Overlay
+        className="rmv__overlay"
+        innerRef={setOverlayRef}
+        hideCursor={hideCursor}
+      >
+        <ClickArea className="rmv__overlay__inner">
           <Edge
+            className="rmv__overlay__left rmv__overlay__edge"
+            innerRef={setOverlayLeftRef}
             onClick={() => this.playToggle(true, true)}
             onDoubleClick={
               canSkip
                 ? () => this.skip(true)
                 : canFullscreen
-                ? this.props.fullscreen
+                ? toggleFullscreen
                 : undefined
             }
           />
           <Center
+            className="rmv__overlay__right"
+            innerRef={setOverlayCenterRef}
             onClick={() => this.playToggle(false, false)}
-            onDoubleClick={canFullscreen ? this.props.fullscreen : undefined}
+            onDoubleClick={canFullscreen ? toggleFullscreen : undefined}
           >
-            {!this.state.firstPlay && this.props.showIcon ? (
-              <OverlayIcon className="animate" innerRef={this.setIconRef}>
+            {!this.state.firstPlay && showIcon ? (
+              <OverlayIcon
+                className="rmv__overlay__icon rmv__icon animate"
+                innerRef={this.setIconRef}
+              >
                 {this.getIcon()}
               </OverlayIcon>
-            ) : this.props.loading && this.props.playing ? (
-              <OverlayLoadingIcon>
-                {this.props.loadingIcon ? this.props.loadingIcon : <Loader />}
+            ) : loading && playing ? (
+              <OverlayLoadingIcon className="rmv__overlay__icon rmv__icon">
+                {loadingIcon ? (
+                  <Spin className="rmv__overlay__loader">{loadingIcon}</Spin>
+                ) : (
+                  <Loader className="rmv__overlay__loader" />
+                )}
               </OverlayLoadingIcon>
             ) : null}
           </Center>
           <Edge
+            className="rmv__overlay__right rmv__overlay__edge"
+            innerRef={setOverlayRightRef}
             onClick={() => this.playToggle(true, false)}
             onDoubleClick={
               canSkip
                 ? () => this.skip(false)
                 : canFullscreen
-                ? this.props.fullscreen
+                ? toggleFullscreen
                 : undefined
             }
           />
@@ -256,6 +303,15 @@ export default class PlayOverlay extends React.Component<
     );
   }
 }
+
+const Spin = styled.div`
+  animation: load 1s ease infinite;
+  @keyframes load {
+    to {
+      transform: rotate(359deg);
+    }
+  }
+`;
 
 const Loader = styled.div`
   width: 100%;
@@ -268,7 +324,7 @@ const Loader = styled.div`
   border-radius: 100%;
   @keyframes load {
     to {
-      transform: rotate(360deg);
+      transform: rotate(359deg);
     }
   }
 `;

@@ -1,25 +1,18 @@
 import React from "react";
 import styled from "styled-components";
-
-export type ProgressDragEvent =
-  | React.MouseEvent<HTMLDivElement>
-  | React.TouchEvent<HTMLDivElement>;
-
-export type SliderFill = {
-  color: string;
-  size: number;
-  position: number;
-  order: number;
-};
-
-export type SliderHandle = {
-  style: "bar" | "cirlce";
-  position: number;
-  onDrag?: (position: number) => void;
-  onDragEnd?: (position: number) => void;
-};
+import classnames from "classnames";
+import { RangeFillCrop, RangeFill } from "./SliderFill";
+import {
+  HoverHandle,
+  RangeHandleTip,
+  HoverHandleInner,
+  RangeHandle,
+  RangeHandleCircle
+} from "./SliderHandle";
+import { ProgressDragEvent, SliderFill, SliderHandle } from "./Types";
 
 export interface SliderProps {
+  classNamePrefix?: string;
   disableMainSlider?: boolean;
   onDrag?: (position: number) => void;
   onDragEnd?: (position: number) => void;
@@ -32,30 +25,34 @@ export interface SliderProps {
   animate?: boolean;
   width?: string;
   toolTipDisplay?: (position: number) => string;
-  mouseToolTip?: boolean;
   sliderFunc?: (pos: number) => number;
+  backgroundFillColor?: string;
+  handleFillColor?: string;
+  handleBorderColor?: string;
+
+  setSliderOuterRef?: (el: HTMLDivElement) => void;
+  setSliderRailRef?: (el: HTMLDivElement) => void;
+  setSliderHandleRef?: (el: HTMLDivElement) => void;
 }
 
 export interface SliderState {
   grab: boolean;
   grabPos: number;
   expand: boolean;
-
   grabs: boolean[];
   grabPoses: number[];
-
   hoverX: number;
 }
 
 const RangeSlider = styled.div<{ expand: boolean; width?: string }>`
-  width: ${props => (props.width ? props.width : "100%")};
+  width: ${({ width }) => (width ? width : "100%")};
   position: relative;
   background: aliceblue;
   border: none;
   margin-top: 5px;
   margin-bottom: 5px;
 
-  height: ${props => (props.expand ? "8px" : "4px")};
+  height: ${({ expand }) => (expand ? "8px" : "4px")};
 
   transition: height 0.2s ease;
   cursor: pointer;
@@ -74,143 +71,27 @@ const RangeSliderRail = styled.div`
   left: 2px;
 `;
 
-const RangeFill = styled.div.attrs<{
-  size: number;
-  position: number;
-  color: string;
-  order: number;
-}>({
-  style: props => ({
-    width: props.size + "%",
-    marginLeft: props.position + "%"
-  })
-})`
-  position: absolute;
-
-  height: 100%;
-  background-color: ${props => props.color};
-  z-index: ${props => props.order};
-  // transition: width 0.1s ease;
-`;
-
-const RangeFillCrop = styled.div`
-  width: 100%;
-  height: 100%;
-  position: absolute;
-
-  overflow: hidden;
-  border-radius: 4px;
-`;
-
-const RangeHandle = styled.div.attrs<{ position: number; expand: boolean }>({
-  style: props => ({
-    marginLeft: props.position + "%"
-  })
-})`
-  position: absolute;
-  z-index: 999;
-  border-radius: 100%;
-  // transition: margin-left 0.1s ease;
-  opacity: ${props => (props.expand ? 1 : 0)};
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  left: -5px;
-  width: 10px;
-  height: 100%;
-`;
-
-const RangeHandleCircle = styled.div<{ expand: boolean }>`
-  height: ${props => (props.expand ? "10px" : 0)};
-  width: ${props => (props.expand ? "10px" : 0)};
-  border-radius: 100%;
-  background: white;
-  border: 1px solid #f1f1f1;
-  flex: 0 0 auto;
-  transition: width 0.2s ease, height 0.2s ease;
-`;
-
-const RangeHandleBar = styled.div<{ expand: boolean }>`
-  height: ${props => (props.expand ? "10px" : 0)};
-  width: ${props => (props.expand ? "2px" : 0)};
-  background: black;
-  border: none;
-  flex: 0 0 auto;
-  cursor: col-resize;
-  transition: width 0.2s ease, height 0.2s ease;
-
-  &:before {
-    content: "";
-    width: 6px;
-    height: 2px;
-    position: absolute;
-    left: 2px;
-    background: black;
-    top: -1px;
-  }
-  &:after {
-    content: "";
-    width: 6px;
-    height: 2px;
-    position: absolute;
-    left: 2px;
-    background: black;
-    bottom: -1px;
-  }
-`;
-
-const RangeHandleTip = styled.div<{ invert?: boolean }>`
-  position: absolute;
-  background: ${props => (props.invert ? "#000" : "#fff")};
-  color: ${props => (props.invert ? "#fff" : "#000")};
-  padding: 2px 5px;
-  border-radius: 4px;
-  bottom: 12px;
-  opacity: 0.8;
-`;
-
-const HoverHandle = styled.div.attrs<{ position: number; expand: boolean }>({
-  style: props => ({
-    marginLeft: props.position + "%"
-  })
-})`
-  position: absolute;
-  z-index: 999;
-  border-radius: 100%;
-  // transition: margin-left 0.1s ease;
-  opacity: ${props => (props.expand ? 1 : 0)};
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  left: -5px;
-  width: 10px;
-  height: 100%;
-`;
-
-const HoverHandleInner = styled.div<{ expand: boolean }>`
-  height: ${props => (props.expand ? "10px" : 0)};
-  width: ${props => (props.expand ? "1px" : 0)};
-  border-radius: 0;
-  opacity: 0.5;
-  background: black;
-  border: none;
-  flex: 0 0 auto;
-`;
-
-export default class Slider extends React.Component<SliderProps, SliderState> {
-  sliderRef!: HTMLDivElement;
-  setSliderRef = (el: HTMLDivElement) => {
-    this.sliderRef = el;
+export class Slider extends React.Component<SliderProps, SliderState> {
+  sliderOuterRef!: HTMLDivElement;
+  setSliderOuterRef = (el: HTMLDivElement) => {
+    this.sliderOuterRef = el;
+    if (this.props.setSliderOuterRef) {
+      this.props.setSliderOuterRef(el);
+    }
   };
   sliderRailRef!: HTMLDivElement;
   setSliderRailRef = (el: HTMLDivElement) => {
     this.sliderRailRef = el;
+    if (this.props.setSliderRailRef) {
+      this.props.setSliderRailRef(el);
+    }
   };
   handleRef!: HTMLDivElement;
   setHandleRef = (el: HTMLDivElement) => {
     this.handleRef = el;
+    if (this.props.setSliderHandleRef) {
+      this.props.setSliderHandleRef(el);
+    }
   };
 
   extraSliderRefs: HTMLDivElement[];
@@ -403,55 +284,95 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
   collapse = () => this.setState({ expand: false });
 
   public render() {
+    const {
+      classNamePrefix,
+      sliders,
+      animate,
+      width,
+      handleBorderColor,
+      handleFillColor,
+      toolTipDisplay,
+      fills,
+      disableMainSlider
+    } = this.props;
+
+    const className = classNamePrefix + "__slider";
+    const { grab, grabs, expand, hoverX } = this.state;
+
     const handlePos = this.getHandlePosition();
 
-    const extraHandlePoses = this.props.sliders
-      ? this.props.sliders.map((slider, i) =>
-          this.getExtraHandlePosition(slider, i)
-        )
+    const extraHandlePoses = sliders
+      ? sliders.map((slider, i) => this.getExtraHandlePosition(slider, i))
       : [];
-    let grabbed = this.state.grab;
+    let grabbed = grab;
     if (!grabbed) {
-      this.state.grabs &&
-        this.state.grabs.forEach(val => {
+      grabs &&
+        grabs.forEach(val => {
           if (val) {
             grabbed = true;
           }
         });
     }
-    const expand = !this.props.animate || this.state.expand || grabbed;
+    const isExpanded = !animate || expand || grabbed;
     return (
       <RangeSlider
+        className={classnames("rmv__slider", className)}
         onMouseOver={this.handleMouseOver}
         onMouseLeave={this.handleMouseLeave}
-        expand={expand}
-        innerRef={this.setSliderRef}
+        expand={isExpanded}
+        innerRef={this.setSliderOuterRef}
         onMouseDown={this.handleSliderStart}
         onMouseUp={this.handleEnd}
         onTouchStart={this.handleSliderStart}
         onTouchEnd={this.handleEnd}
-        width={this.props.width}
+        width={width}
       >
-        <RangeSliderRail innerRef={this.setSliderRailRef}>
-          {this.props.mouseToolTip && !this.state.grab && this.state.expand && (
-            <HoverHandle expand={expand} position={this.state.hoverX}>
-              {this.props.toolTipDisplay && (
-                <RangeHandleTip invert>
-                  {this.props.toolTipDisplay(this.state.hoverX)}
+        <RangeSliderRail
+          className={classnames("rmv__slider__rail", className + "__rail")}
+          innerRef={this.setSliderRailRef}
+        >
+          {!grab && isExpanded && (
+            <HoverHandle
+              className={classnames(
+                "rmv__slider__hover",
+                className + "__hover"
+              )}
+              expand={isExpanded}
+              position={hoverX}
+            >
+              {toolTipDisplay && (
+                <RangeHandleTip
+                  className={classnames(
+                    "rmv__slider__tool-tip",
+                    className + "__tool-tip"
+                  )}
+                  invert
+                >
+                  {toolTipDisplay(hoverX)}
                 </RangeHandleTip>
               )}
-              <HoverHandleInner expand={expand} />
+              <HoverHandleInner
+                className={classnames(
+                  "rmv__slider__hover__inner",
+                  className + "__hover__inner"
+                )}
+                expand={isExpanded}
+              />
             </HoverHandle>
           )}
 
-          {this.props.sliders &&
-            this.props.sliders.map((slider, index) => {
-              const RangeHandleInner =
-                slider.style === "bar" ? RangeHandleBar : RangeHandleCircle;
+          {sliders &&
+            sliders.map((slider, index) => {
               return (
                 <RangeHandle
+                  className={classnames(
+                    "rmv__slider__handle",
+                    "rmv__slider__handle-extra",
+                    className + "__handle",
+                    className + "__handle-extra"
+                  )}
                   key={index}
-                  expand={expand}
+                  expand={isExpanded}
                   innerRef={el => this.setExtraSliderRef(el, index)}
                   position={extraHandlePoses[index]}
                   onMouseDown={e => this.handleExtraSliderStart(e, index)}
@@ -459,18 +380,39 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
                   onTouchStart={e => this.handleExtraSliderStart(e, index)}
                   onTouchEnd={e => this.handleExtraEnd(e, index)}
                 >
-                  {this.state.grabs[index] && this.props.toolTipDisplay && (
-                    <RangeHandleTip>
-                      {this.props.toolTipDisplay(extraHandlePoses[index])}
+                  {grabs[index] && toolTipDisplay && (
+                    <RangeHandleTip
+                      className={classnames(
+                        "rmv__slider__tool-tip",
+                        className + "__tool-tip"
+                      )}
+                    >
+                      {toolTipDisplay(extraHandlePoses[index])}
                     </RangeHandleTip>
                   )}
-                  <RangeHandleInner expand={expand} />
+                  <RangeHandleCircle
+                    fillColor={handleFillColor}
+                    borderColor={handleBorderColor}
+                    className={classnames(
+                      "rmv__slider__handle__inner",
+                      "rmv__slider__handle__inner-extra",
+                      className + "__handle__inner",
+                      className + "__handle__inner-extra"
+                    )}
+                    expand={isExpanded}
+                  />
                 </RangeHandle>
               );
             })}
-          {!this.props.disableMainSlider && (
+          {!disableMainSlider && (
             <RangeHandle
-              expand={expand}
+              className={classnames(
+                "rmv__slider__handle-main",
+                "rmv__slider__handle",
+                className + "__handle-main",
+                className + "__handle"
+              )}
+              expand={isExpanded}
               innerRef={this.setHandleRef}
               position={handlePos}
               onMouseDown={this.handleHandleStart}
@@ -478,20 +420,42 @@ export default class Slider extends React.Component<SliderProps, SliderState> {
               onTouchStart={this.handleHandleStart}
               onTouchEnd={this.handleEnd}
             >
-              {this.state.grab && this.props.toolTipDisplay && (
-                <RangeHandleTip>
-                  {this.props.toolTipDisplay(handlePos)}
+              {grab && toolTipDisplay && (
+                <RangeHandleTip
+                  className={classnames(
+                    "rmv__slider__tool-tip",
+                    className + "__tool-tip"
+                  )}
+                >
+                  {toolTipDisplay(handlePos)}
                 </RangeHandleTip>
               )}
-              <RangeHandleCircle expand={expand} />
+              <RangeHandleCircle
+                className={classnames(
+                  "rmv__slider__handle__inner",
+                  "rmv__slider__handle__inner-main",
+                  className + "__handle__inner",
+                  className + "__handle__inner-main"
+                )}
+                expand={isExpanded}
+              />
             </RangeHandle>
           )}
         </RangeSliderRail>
-        <RangeFillCrop>
-          {this.props.fills &&
-            this.props.fills.map((fill, index) => {
+        <RangeFillCrop
+          className={classnames(
+            "rmv__slider__fill-crop",
+            className + "__fill-crop"
+          )}
+        >
+          {fills &&
+            fills.map((fill, index) => {
               return (
                 <RangeFill
+                  className={classnames(
+                    "rmv__slider__fill",
+                    className + "__fill"
+                  )}
                   order={fill.order}
                   color={fill.color}
                   key={index}

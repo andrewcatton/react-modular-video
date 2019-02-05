@@ -1,12 +1,13 @@
 import * as React from "react";
 import { Control } from "../ControlBar";
 import styled from "styled-components";
+import { ControlButtonProps } from "./Types";
+import classnames from "classnames";
 
 export interface PlaybackRateProps {
-  rate: number;
-  setRate: (rate: number) => void;
   opaque?: boolean;
   rates?: number[];
+  setMenuRef?: (el: HTMLDivElement) => void;
 }
 
 export interface PlaybackRateState {
@@ -19,19 +20,19 @@ const RateMenu = styled.div<{ opaque?: boolean }>`
   position: absolute;
   bottom: calc(100% + 6px);
   width: 100%;
-  background: ${props => (props.opaque ? "black" : "rgba(0, 0, 0, 0.5)")};
+  background: ${({ opaque }) => (opaque ? "black" : "rgba(0, 0, 0, 0.5)")};
   button {
     width: 100%;
   }
   z-index: 998;
   button:hover,
   button:focus {
-    background: ${props =>
-      props.opaque ? "rgb(180, 180, 180)" : "rgba(180, 180, 180, 0.5)"};
+    background: ${({ opaque }) =>
+      opaque ? "rgb(180, 180, 180)" : "rgba(180, 180, 180, 0.5)"};
   }
 `;
 
-const RateButton = styled.div`
+const RateControl = styled(Control)`
   position: relative;
   button {
     &:hover,
@@ -43,7 +44,7 @@ const RateButton = styled.div`
 `;
 
 export class PlaybackRate extends React.Component<
-  PlaybackRateProps,
+  PlaybackRateProps & ControlButtonProps,
   PlaybackRateState
 > {
   constructor(props) {
@@ -56,6 +57,9 @@ export class PlaybackRate extends React.Component<
   ref!: HTMLDivElement;
   setRef = (element: HTMLDivElement) => {
     this.ref = element;
+    if (this.props.setContainerRef) {
+      this.props.setContainerRef(element);
+    }
   };
 
   componentWillMount() {
@@ -73,33 +77,53 @@ export class PlaybackRate extends React.Component<
     this.setState({ menuOpen: false });
   };
 
-  public render() {
-    let rates =
-      this.props.rates && this.props.rates.length > 0
-        ? this.props.rates
-        : RATES;
+  render() {
+    const {
+      rates,
+      setButtonRef,
+      setMenuRef,
+      opaque,
+      className,
+      playerState: { playbackRate }
+    } = this.props;
+    let {
+      player: { setPlaybackRate }
+    } = this.props;
+    const displayRates = rates && rates.length > 0 ? rates : RATES;
     return (
-      <Control innerRef={this.setRef} flex="no-shrink">
-        <RateButton>
-          <RateMenu opaque={this.props.opaque}>
-            {this.state.menuOpen &&
-              rates.map((rate, index) => {
-                if (rate <= 0) return null;
-                return (
-                  <button onClick={() => this.props.setRate(rate)} key={index}>
-                    {rate}x
-                  </button>
-                );
-              })}
-          </RateMenu>
-          <button
-            onKeyDown={e => e.stopPropagation()}
-            onClick={() => this.setState({ menuOpen: !this.state.menuOpen })}
-          >
-            Rate: {this.props.rate}x
-          </button>
-        </RateButton>
-      </Control>
+      <RateControl
+        className={classnames(className, "playback-rate rmv__control")}
+        innerRef={this.setRef}
+        flex="no-shrink"
+      >
+        <RateMenu
+          className="playback-rate__menu rmv__menu"
+          innerRef={setMenuRef}
+          opaque={opaque}
+        >
+          {this.state.menuOpen &&
+            displayRates.map((rate, index) => {
+              if (rate <= 0) return null;
+              return (
+                <button
+                  className="playback-rate__menu__button rmv__menu__button"
+                  onClick={() => setPlaybackRate(rate)}
+                  key={index}
+                >
+                  {rate}x
+                </button>
+              );
+            })}
+        </RateMenu>
+        <button
+          className="playback-rate__button rmv__button"
+          ref={setButtonRef}
+          onKeyDown={e => e.stopPropagation()}
+          onClick={() => this.setState({ menuOpen: !this.state.menuOpen })}
+        >
+          Rate: {playbackRate}x
+        </button>
+      </RateControl>
     );
   }
 }

@@ -74,8 +74,13 @@ export const ControlCol = styled.div<{ flex?: "grow" | "no-shrink" }>`
 
 export interface ControlBarProps {
   children: any;
+  setControlBarRef: (el: HTMLDivElement) => void;
 }
 
-export function ControlBar(props: ControlBarProps) {
-  return <Controls>{props.children}</Controls>;
-}
+export const ControlBar = (props: ControlBarProps) => {
+  return (
+    <Controls className="rmv__control-bar" innerRef={props.setControlBarRef}>
+      {props.children}
+    </Controls>
+  );
+};

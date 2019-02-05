@@ -1,29 +1,31 @@
 import React from "react";
 import { throttle, formatTime } from "../../utils/helpers";
-import Slider, { SliderFill, SliderHandle } from "../slider/Slider";
 import { Control } from "../ControlBar";
+import { ControlProps } from "./Types";
+import classnames from "classnames";
+import { SliderFill, SliderHandle, Slider } from "../slider";
 
 export interface ProgressBarProps {
-  duration: number;
-  currentTime: number;
-  buffered?: TimeRanges;
-  seeking: boolean;
-  setCurrentTime: (time: number) => void;
   scrub?: boolean;
-  fills?: SliderFill[];
-  handles?: SliderHandle[];
+  extraFills?: SliderFill[];
+  extraHandles?: SliderHandle[];
   disableAnimate?: boolean;
   bufferedFillOrder?: number;
   bufferedFillColor?: string;
   progressFillOrder?: number;
   progressFillColor?: string;
+  handleFillColor?: string;
+  handleBorderColor?: string;
+  backgroundFillColor?: string;
   disableMainSlider?: boolean;
+  disableBufferBar?: boolean;
+  disableMouseTooltip?: boolean;
 }
 
 export interface ProgressBarState {}
 
 export class ProgressBar extends React.Component<
-  ProgressBarProps,
+  ProgressBarProps & ControlProps,
   ProgressBarState
 > {
   constructor(props) {
@@ -36,71 +38,93 @@ export class ProgressBar extends React.Component<
 
   onDrag = (position: number) => {
     if (this.props.scrub) {
-      this.props.setCurrentTime(this.getTimeFromPosition(position));
+      this.props.player.seek(this.getTimeFromPosition(position));
     }
   };
 
   onDragEnd = (position: number) => {
     if (!this.props.scrub) {
-      this.props.setCurrentTime(this.getTimeFromPosition(position));
+      this.props.player.seek(this.getTimeFromPosition(position));
     }
   };
 
   getTimeFromPosition = (position: number) => {
-    return (position / 100) * this.props.duration;
+    return (position / 100) * this.props.playerState.duration;
   };
 
   getFormattedTime = (position: number) => {
     return formatTime(this.getTimeFromPosition(position));
   };
 
-  public render() {
+  render() {
+    const {
+      className,
+      extraFills,
+      extraHandles,
+      disableMainSlider,
+      disableBufferBar,
+      disableAnimate,
+      progressFillColor,
+      backgroundFillColor,
+      bufferedFillColor,
+      bufferedFillOrder,
+      handleFillColor,
+      handleBorderColor,
+      disableMouseTooltip,
+      progressFillOrder,
+      playerState: { currentTime, buffered, duration, seeking }
+    } = this.props;
+
     let fills: SliderFill[] = [];
-    if (!this.props.disableMainSlider) {
+    if (!disableMainSlider) {
       fills.push({
-        color: this.props.progressFillColor
-          ? this.props.progressFillColor
-          : "#0095ff",
-        size: this.props.currentTime,
+        color: progressFillColor ? progressFillColor : "#0095ff",
+        size: currentTime,
         position: 0,
-        order: this.props.progressFillOrder ? this.props.progressFillOrder : 2
+        order: progressFillOrder ? progressFillOrder : 2
       });
     }
 
-    let { buffered } = this.props;
-    if (buffered) {
+    if (buffered && !disableBufferBar) {
       for (let i = 0; i < buffered.length; i++) {
         const left = buffered.start(i);
         const right = buffered.end(i);
         fills.push({
-          color: this.props.bufferedFillColor
-            ? this.props.bufferedFillColor
-            : "#abb1bf",
+          color: bufferedFillColor ? bufferedFillColor : "#abb1bf",
           position: left,
           size: right - left,
-          order: this.props.bufferedFillOrder ? this.props.bufferedFillOrder : 1
+          order: bufferedFillOrder ? bufferedFillOrder : 1
         });
       }
     }
-    if (this.props.fills) {
-      fills.push(...this.props.fills);
+
+    if (extraFills) {
+      fills.push(...extraFills);
     }
 
     return (
-      <Control flex="grow">
+      <Control
+        flex="grow"
+        className={classnames(className, "progress-bar rmv__control")}
+      >
         <Slider
-          disableMainSlider={this.props.disableMainSlider}
-          animate={!this.props.disableAnimate}
+          classNamePrefix="progress-bar"
+          backgroundFillColor={backgroundFillColor}
+          handleFillColor={handleFillColor}
+          handleBorderColor={handleBorderColor}
+          disableMainSlider={disableMainSlider}
+          animate={!disableAnimate}
           onDrag={this.onDrag}
           onDragEnd={this.onDragEnd}
-          maxVal={this.props.duration}
-          currVal={this.props.currentTime}
-          seeking={this.props.seeking}
+          maxVal={duration}
+          currVal={currentTime}
+          seeking={seeking}
           fills={fills}
-          sliders={this.props.handles}
+          sliders={extraHandles}
           sliderFunc={this.getTimeFromPosition}
-          toolTipDisplay={this.getFormattedTime}
-          mouseToolTip
+          toolTipDisplay={
+            this.props.disableMouseTooltip ? undefined : this.getFormattedTime
+          }
         />
       </Control>
     );

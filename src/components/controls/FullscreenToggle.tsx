@@ -1,30 +1,45 @@
 import React from "react";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { Control } from "../ControlBar";
+import { ControlProps } from "./Types";
+import classnames from "classnames";
+
 export interface FullScreenToggleProps {
-  toggleFullscreen: () => void;
-  isFullscreen: boolean;
   fullscreenIcon?: JSX.Element;
   exitIcon?: JSX.Element;
+  setButtonRef?: () => HTMLButtonElement;
 }
 
-export function FullScreenToggle(props: FullScreenToggleProps) {
+export function FullScreenToggle({
+  className,
+  setContainerRef,
+  setButtonRef,
+  exitIcon,
+  fullscreenIcon,
+  player: { toggleFullscreen },
+  playerState: { isFullscreen }
+}: FullScreenToggleProps & ControlProps) {
   return (
-    <Control>
+    <Control
+      innerRef={setContainerRef}
+      className={classnames(className, "fullscreen-toggle rmv__control")}
+    >
       <button
+        ref={setButtonRef}
         onKeyDown={e => e.stopPropagation()}
-        onClick={props.toggleFullscreen}
+        onClick={toggleFullscreen}
+        className="fullscreen-toggle__button rmv__button"
       >
-        {props.isFullscreen ? (
-          props.exitIcon ? (
-            props.exitIcon
+        {isFullscreen ? (
+          exitIcon ? (
+            exitIcon
           ) : (
-            <MdFullscreenExit />
+            <MdFullscreenExit className="fullscreen-toggle__icon rmv__icon" />
           )
-        ) : props.fullscreenIcon ? (
-          props.fullscreenIcon
+        ) : fullscreenIcon ? (
+          fullscreenIcon
         ) : (
-          <MdFullscreen />
+          <MdFullscreen className="fullscreen-toggle__icon rmv__icon" />
         )}
       </button>
     </Control>

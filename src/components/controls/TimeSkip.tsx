@@ -8,49 +8,60 @@ import {
   MdReplay30
 } from "react-icons/md";
 import { Control } from "../ControlBar";
+import { ControlButtonProps } from "./Types";
+import classnames from "classnames";
 
 export interface TimeSkipProps {
   amount: 5 | 10 | 30;
   reverse?: boolean;
-  skip: (time: number) => void;
-  forwardIcon?: JSX.Element;
-  replayIcon?: JSX.Element;
+  skipIcon?: JSX.Element;
 }
 
 function getReplayIcon(amount: number) {
   switch (amount) {
     case 5:
-      return <MdReplay5 />;
+      return <MdReplay5 className="time-skip__icon rmv__icon" />;
     case 10:
-      return <MdReplay10 />;
+      return <MdReplay10 className="time-skip__icon rmv__icon" />;
     case 30:
-      return <MdReplay30 />;
+      return <MdReplay30 className="time-skip__icon rmv__icon" />;
   }
 }
 function getForwardIcon(amount: number) {
   switch (amount) {
     case 5:
-      return <MdForward5 />;
+      return <MdForward5 className="time-skip__icon rmv__icon" />;
     case 10:
-      return <MdForward10 />;
+      return <MdForward10 className="time-skip__icon rmv__icon" />;
     case 30:
-      return <MdForward30 />;
+      return <MdForward30 className="time-skip__icon rmv__icon" />;
   }
 }
-export function TimeSkip(props: TimeSkipProps) {
+export function TimeSkip({
+  className,
+  setContainerRef,
+  setButtonRef,
+  skipIcon,
+  reverse,
+  amount,
+  player: { skip }
+}: TimeSkipProps & ControlButtonProps) {
   return (
-    <Control>
+    <Control
+      className={classnames(className, "time-skip rmv__control")}
+      innerRef={setContainerRef}
+    >
       <button
+        className="time-skip__button rmv__button"
+        ref={setButtonRef}
         onKeyDown={e => e.stopPropagation()}
-        onClick={() => props.skip((props.reverse ? -1 : 1) * props.amount)}
+        onClick={() => skip((reverse ? -1 : 1) * amount)}
       >
-        {props.reverse
-          ? props.replayIcon
-            ? props.replayIcon
-            : getReplayIcon(props.amount)
-          : props.forwardIcon
-          ? props.forwardIcon
-          : getForwardIcon(props.amount)}
+        {skipIcon
+          ? skipIcon
+          : reverse
+          ? getReplayIcon(amount)
+          : getForwardIcon(amount)}
       </button>
     </Control>
   );

@@ -2,6 +2,8 @@ import * as React from "react";
 import { Control } from "../ControlBar";
 import styled from "styled-components";
 import { formatTime } from "src/utils/helpers";
+import { ControlProps } from "./Types";
+import classnames from "classnames";
 
 export enum TimeDisplayType {
   ELAPSED = "elapsed",
@@ -10,9 +12,6 @@ export enum TimeDisplayType {
 }
 
 export interface TimeDisplayProps {
-  currentTime: number;
-  duration: number;
-
   displayType: TimeDisplayType;
   secondaryDisplayType?: TimeDisplayType;
   separator?: string;
@@ -38,16 +37,31 @@ const Span = styled.span`
   pointer-events: none;
 `;
 
-export function TimeDisplay(props: TimeDisplayProps) {
-  let currentTime = Math.floor(props.currentTime);
-  let duration = Math.floor(props.duration);
+export function TimeDisplay({
+  className,
+  setContainerRef,
+  separator,
+  displayType,
+  secondaryDisplayType,
+  playerState: { duration, currentTime }
+}: TimeDisplayProps & ControlProps) {
+  let roundedCurrentTime = Math.floor(currentTime);
+  let roundedDuration = Math.floor(duration);
   return (
-    <Control flex="no-shrink">
-      <Span>
-        {getTimeDisplay(props.displayType, currentTime, duration)}
-        {props.secondaryDisplayType && (props.separator || " / ")}
-        {props.secondaryDisplayType &&
-          getTimeDisplay(props.secondaryDisplayType, currentTime, duration)}
+    <Control
+      innerRef={setContainerRef}
+      className={classnames(className, "time-display rmv__control")}
+      flex="no-shrink"
+    >
+      <Span className="time-display__span rmv__span">
+        {getTimeDisplay(displayType, roundedCurrentTime, roundedDuration)}
+        {secondaryDisplayType && (separator || " / ")}
+        {secondaryDisplayType &&
+          getTimeDisplay(
+            secondaryDisplayType,
+            roundedCurrentTime,
+            roundedDuration
+          )}
       </Span>
     </Control>
   );
