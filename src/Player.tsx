@@ -55,7 +55,6 @@ export interface PlayerProps {
   subscribeToStateChange?: (state: PlayerState) => void;
 
   onResize?: () => void;
-  render: (props: PlayerState, player: Player) => JSX.Element;
 
   loop?: boolean;
   hideControlsDelay?: number;
@@ -75,6 +74,9 @@ export interface PlayerProps {
   rewindIcon?: JSX.Element;
   volumeDownIcon?: JSX.Element;
   volumeUpIcon?: JSX.Element;
+
+  renderContent?: (props: PlayerState, player: Player) => JSX.Element;
+  renderControls: (props: PlayerState, player: Player) => JSX.Element;
 }
 
 export interface PlayerState {
@@ -621,7 +623,7 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
             ((this.props.neverHideControlsUnlessFullscreen &&
               !this.state.isFullscreen) ||
               this.state.controlsVisible)) &&
-          this.props.render(this.state, this)}
+          this.props.renderControls(this.state, this)}
 
         {!this.props.disableInitialOverlay &&
           this.videoRef &&
@@ -688,6 +690,8 @@ export class Player extends React.Component<PlayerProps, PlayerState> {
           onRateChange={this.handleRateChange}
           onVolumeChange={this.handleVolumeChange}
         />
+        {this.props.renderContent !== undefined &&
+          this.props.renderContent(this.state, this)}
       </VideoDiv>
     );
   }
