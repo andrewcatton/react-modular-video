@@ -165,7 +165,7 @@ export default class App extends React.Component<AppProps, AppState> {
               }
               disableInitialOverlay={this.state.disableInitialOverlay}
               disableKeyboardControls={this.state.disableKeyboardControls}
-              render={(playerState: PlayerState, player: Player) => (
+              renderControls={(playerState: PlayerState, player: Player) => (
                 <ControlBar>
                   <ControlRow align="flex-start">
                     {this.state.showPlayPause && (
