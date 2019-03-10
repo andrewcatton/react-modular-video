@@ -186,7 +186,6 @@ export class Slider extends React.Component<SliderProps, SliderState> {
   handleDrag = (e: ProgressDragEvent) => {
     e.preventDefault();
     let grabPos = this.getGrabPosition(e);
-    console.log("grabPos :", grabPos);
     this.setState({ grabPos });
     if (this.props.onDrag) {
       this.props.onDrag(grabPos);

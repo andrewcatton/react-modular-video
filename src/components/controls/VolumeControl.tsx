@@ -109,7 +109,6 @@ export class VolumeControl extends React.Component<
   }
 
   onDrag = (position: number) => {
-    console.log("position :", position);
     !this.state.grab && this.setState({ grab: true });
     this.props.player.setVolume(this.getVolumeFromPosition(position));
   };
