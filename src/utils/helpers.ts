@@ -49,6 +49,9 @@ export function createHandler(
 }
 
 export function formatTime(seconds: number) {
+  if (isNaN(seconds) || seconds === null || seconds === undefined) {
+    seconds = 0;
+  }
   const hours = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds / 60) % 60);
   const secs = Math.floor(seconds % 60);

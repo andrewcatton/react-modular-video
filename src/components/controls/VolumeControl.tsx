@@ -59,7 +59,7 @@ export class VolumeControl extends React.Component<
       menuHidden: true,
       grab: false
     };
-    this.onDrag = throttle(this.onDrag, 100);
+    this.onDrag = throttle(this.onDrag, 10);
   }
 
   getIcon() {
